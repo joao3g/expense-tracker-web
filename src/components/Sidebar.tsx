@@ -1,0 +1,78 @@
+import { 
+    ScanEye, 
+    LayoutDashboard, 
+    HandCoins, 
+    Rows2, 
+    Settings,
+    User
+} from "lucide-react";
+import { useAuth } from "../hooks/useAuth";
+
+function SidebarButton(props: React.ButtonHTMLAttributes<HTMLButtonElement>) {
+    return (
+        <button
+            className="flex flex-row gap-x-3 px-4 py-4 text-white hover:bg-emerald-900 cursor-pointer rounded"
+            {...props}
+        >
+            {props.children}
+        </button>
+    )
+}
+
+export function Sidebar() {
+    const authContext = useAuth();
+
+    return (
+        <>
+            <div
+                className="flex flex-row justify-end items-center gap-6 px-8 h-20 w-full absolute text-gray text-lg bg-neutral-200 border-b-1 border-neutral-300"
+            >
+                <span className="font-semibold">{authContext.user?.name}</span>
+                <User />
+            </div>
+            <nav
+                className="fixed flex flex-col justify-between items-center w-90 min-h-screen bg-linear-to-t from-emerald-900 to-emerald-800 pb-10"
+            >
+                <div className="w-full">
+                    <div
+                        className="flex justify-center items-center bg-emerald-900 px-8 h-20"
+                    >
+                        <ScanEye color="white" className="mr-3" size={40}/>
+                        <span className="text-white text-2xl font-bold">
+                            Expense Tracker
+                        </span>
+                    </div>
+                    <div
+                        className="border-b-2 border-emerald-900 bg-emerald-800 flex flex-col font-semibold py-4 px-8 gap-2"
+                    >
+                        <SidebarButton onClick={() => console.log("Dashboard!")}>
+                            <LayoutDashboard />
+                            Dashboard
+                        </SidebarButton>
+
+                        <SidebarButton onClick={() => console.log("Despesas!")}>
+                            <HandCoins />
+                            Despesas
+                        </SidebarButton>
+
+                        <SidebarButton onClick={() => console.log("Categorias!")}>
+                            <Rows2 />
+                            Categorias
+                        </SidebarButton>
+
+                        <SidebarButton onClick={() => console.log("Configurações!")}>
+                            <Settings />
+                            Configurações
+                        </SidebarButton>
+                    </div>
+                </div>
+                <button
+                    className="px-8 py-2 text-white font-semibold cursor-pointer rounded bg-emerald-700 max-w-max"
+                    onClick={() => console.log("Add expense!")}
+                >
+                    Adicionar despesa
+                </button>
+            </nav>
+        </>
+    )
+}

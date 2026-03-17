@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { Button } from '../components/Button';
 import { Input } from '../components/Input';
-import authService from '../api/auth.service';
+import * as authService from '../api/services/auth.service';
+import { useAuth } from '../hooks/useAuth';
 
 function Main() {
     const navigate = useNavigate();
@@ -11,19 +12,22 @@ function Main() {
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
 
+    const authContext = useAuth();
+
     async function handleLogin() {
         try {
             const result = await authService.login(login, password);
+
             
-            localStorage.setItem("token", result.token);
-            return navigate("/group");
+            authContext.login(result.token, result.user);
+            return navigate("/dashboard");
         } catch (error) {
             setError("Login e/ou senha incorretos!");
         }
     }
 
     return (
-        <div className="flex justify-center items-center min-h-screen">
+        <div className="flex justify-center items-center min-h-screen bg-neutral-100">
             <div className="bg-gray-200 rounded py-6 px-8 flex flex-col justify-center items-center max-w-min gap-y-5">
                 <h1>Minhas Finanças</h1>
                 <Input 

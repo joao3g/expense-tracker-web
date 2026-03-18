@@ -46,7 +46,7 @@ function getExpensesByCategoryPieData(expensesSummarized: ExpenseSummarized) {
 }
 
 function getIncomesVsExpensesBarChartData(startDate: Date, expensesTotal: ExpenseTotal[], incomesTotal: IncomeTotal[]) {
-    if (expensesTotal.length !== incomesTotal.length) throw "expenseTotal and incomeTotal need to have the same size!";
+    if (expensesTotal.length !== incomesTotal.length) throw "expensesTotal and incomesTotal need to have the same size!";
 
     const labels = [];
     for (let index = 0; index < incomesTotal.length; index++) {
@@ -59,6 +59,18 @@ function getIncomesVsExpensesBarChartData(startDate: Date, expensesTotal: Expens
         incomeData: incomesTotal.map(item => Number(item._sum.amount)),
         expenseData: expensesTotal.map(item => Number(item._sum.amount))
     };
+}
+
+function getLastMonthRelationData(expensesTotal: ExpenseTotal[], incomesTotal: IncomeTotal[]) {
+    if (expensesTotal.length < 2 || incomesTotal.length < 2) throw "incomesTotal and expensesTotal has to have size greater than 1";
+
+    const currentMonthBalance = Number(incomesTotal[0]._sum.amount) - Number(expensesTotal[0]._sum.amount);
+    const lastMonthBalance = Number(incomesTotal[1]._sum.amount) - Number(expensesTotal[1]._sum.amount);
+
+    if (currentMonthBalance === 0 || lastMonthBalance === 0) return "+ 0%";
+    
+    const relation = (currentMonthBalance - lastMonthBalance) * 100 / lastMonthBalance;
+    return relation >= 0 ? `+ ${relation}%` : `- ${relation}%`;
 }
 
 export default function Main() {
@@ -76,6 +88,7 @@ export default function Main() {
     const [incomesVsExpensesBarChartData, setIncomesVsExpensesBarChartData] = useState<{ labels: string[], incomeData: number[], expenseData: number[] }>(getIncomesVsExpensesBarChartData(new Date(), data.expensesTotal, data.incomesTotal));
     const [incomeTotal, setIncomeTotal] = useState(data.incomes.reduce((acc, current) => acc += Number(current.amount), 0));
     const [expenseTotal, setExpenseTotal] = useState(data.expenses.reduce((acc, current) => acc += Number(current.amount), 0));
+    const [lastMonthRelation, setLastMonthRelation] = useState(getLastMonthRelationData(data.expensesTotal, data.incomesTotal));
 
     useEffect(() => {
         const updateExpenses = async () => {
@@ -121,6 +134,7 @@ export default function Main() {
                         ]
                     ]);
 
+                    setLastMonthRelation(getLastMonthRelationData(expensesTotal, incomesTotal));
                     setIncomesVsExpensesBarChartData(getIncomesVsExpensesBarChartData(selectedDate.toDate(), expensesTotal, incomesTotal));
                 }
             } catch (e) {
@@ -173,7 +187,7 @@ export default function Main() {
                     <Card
                         title="Balanço"
                         metric={`${(incomeTotal - expenseTotal).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}`}
-                        description="+ 8% em relação ao mês anterior"
+                        description={`${lastMonthRelation} em relação ao mês anterior`}
                         bgColor="teal"
                     />
                 </div>

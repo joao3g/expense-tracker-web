@@ -4,9 +4,11 @@ import {
     HandCoins, 
     Rows2, 
     Settings,
-    User
+    User,
+    LogOut
 } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
+import { useNavigate } from "react-router";
 
 function SidebarButton(props: React.ButtonHTMLAttributes<HTMLButtonElement>) {
     return (
@@ -21,6 +23,12 @@ function SidebarButton(props: React.ButtonHTMLAttributes<HTMLButtonElement>) {
 
 export function Sidebar() {
     const authContext = useAuth();
+    const navigate = useNavigate();
+
+    function logout() {
+        authContext.logout();
+        navigate("/login");
+    }
 
     return (
         <>
@@ -29,6 +37,10 @@ export function Sidebar() {
             >
                 <span className="font-semibold">{authContext.user?.name}</span>
                 <User />
+                <LogOut 
+                    onClick={logout}
+                    className="cursor-pointer"
+                />
             </div>
             <nav
                 className="fixed flex flex-col justify-between items-center w-90 min-h-screen bg-linear-to-t from-emerald-900 to-emerald-800 pb-10"

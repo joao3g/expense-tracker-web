@@ -4,7 +4,7 @@ interface CustomInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
 
 export function Input(props: CustomInputProps) {
     return (
-        <div className="flex flex-col gap-y-1">
+        <div className="flex flex-col gap-y-1 flex-1">
             <label className="text-gray-700 text-sm">{props.label}</label>
             <input
                 {...props}

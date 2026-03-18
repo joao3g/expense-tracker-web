@@ -1,9 +1,24 @@
+export const PaymentMethod = {
+    CREDIT: "CREDIT",
+    DEBIT: "DEBIT",
+    VOUCHER: "VOUCHER"
+} as const;
+
+export type ExpenseCreate = {
+    title: string
+    description?: string
+    amount: number
+    date: string
+    paymentMethod: typeof PaymentMethod[keyof typeof PaymentMethod]
+    category: string
+}
+
 export type Expense = {
     title: string
     description?: string
     amount: string
     date: Date
-    paymentMethod: 'CREDIT' | 'DEBIT' | 'VOUCHER'
+    paymentMethod: typeof PaymentMethod[keyof typeof PaymentMethod]
     category: {
         id: string
         title: string

@@ -1,5 +1,9 @@
 import { api } from "./client";
-import type { Expense, ExpenseSummarized, ExpenseTotal } from "../types/expense";
+import type { ExpenseCreate, Expense, ExpenseSummarized, ExpenseTotal } from "../types/expense";
+
+export const createExpense = async (expenseData: ExpenseCreate) => {
+    await api.post<void>(`/expense/create`, expenseData);
+}
 
 export const getExpensesByMonth = async (date: Date) => {
     const { data } = await api.get<Expense[]>(`/expense/getByMonth/${date.toLocaleDateString("en-CA")}`);

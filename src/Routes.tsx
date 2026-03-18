@@ -57,15 +57,15 @@ async function getDashboardData() {
             await expenseService.getExpensesSummarizedByMonth(now),
             [
                 await expenseService.getExpensesTotalByMonth(now),
-                await expenseService.getExpensesTotalByMonth(getMonthOffset(now, 1)),
-                await expenseService.getExpensesTotalByMonth(getMonthOffset(now, 2)),
-                await expenseService.getExpensesTotalByMonth(getMonthOffset(now, 3)),
+                await expenseService.getExpensesTotalByMonth(getMonthOffset(now, -1)),
+                await expenseService.getExpensesTotalByMonth(getMonthOffset(now, -2)),
+                await expenseService.getExpensesTotalByMonth(getMonthOffset(now, -3)),
             ],
             [
                 await expenseService.getExpensesTotalByMonth(now),
-                await expenseService.getExpensesTotalByMonth(getMonthOffset(now, 1)),
-                await expenseService.getExpensesTotalByMonth(getMonthOffset(now, 2)),
-                await expenseService.getExpensesTotalByMonth(getMonthOffset(now, 3)),
+                await expenseService.getExpensesTotalByMonth(getMonthOffset(now, -1)),
+                await expenseService.getExpensesTotalByMonth(getMonthOffset(now, -2)),
+                await expenseService.getExpensesTotalByMonth(getMonthOffset(now, -3)),
             ]
         ]);
 

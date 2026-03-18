@@ -9,6 +9,8 @@ import {
 } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
 import { useNavigate } from "react-router";
+import { useState } from "react";
+import { AddExpenseModal } from "./modals/AddExpenseModal";
 
 function SidebarButton(props: React.ButtonHTMLAttributes<HTMLButtonElement>) {
     return (
@@ -22,6 +24,8 @@ function SidebarButton(props: React.ButtonHTMLAttributes<HTMLButtonElement>) {
 }
 
 export function Sidebar() {
+    const [expenseModalOpen, setExpenseModalOpen] = useState(false);
+
     const authContext = useAuth();
     const navigate = useNavigate();
 
@@ -32,6 +36,10 @@ export function Sidebar() {
 
     return (
         <>
+            <AddExpenseModal 
+                open={expenseModalOpen}
+                onClose={() => setExpenseModalOpen(false)}
+            />
             <div
                 className="flex flex-row justify-end items-center gap-6 px-8 h-20 w-full absolute text-gray text-lg bg-neutral-200 border-b-1 border-neutral-300"
             >
@@ -80,7 +88,7 @@ export function Sidebar() {
                 </div>
                 <button
                     className="px-8 py-2 text-white font-semibold cursor-pointer rounded bg-emerald-700 max-w-max"
-                    onClick={() => console.log("Add expense!")}
+                    onClick={() => setExpenseModalOpen(true)}
                 >
                     Adicionar despesa
                 </button>

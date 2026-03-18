@@ -1,10 +1,4 @@
 import { useEffect, useState } from 'react';
-import dayjs, { Dayjs } from 'dayjs';
-import 'dayjs/locale/pt';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import { ptBR } from '@mui/x-date-pickers/locales';
 import { useLoaderData } from "react-router";
 import { Card } from '../components/Card';
 import { Table } from '../components/Table';
@@ -16,6 +10,7 @@ import * as expenseService from '../api/services/expense.service';
 import * as incomeService from '../api/services/income.service';
 import type { PieValueType } from '@mui/x-charts';
 import { getMonthOffset } from '../utils';
+import { Input } from '../components/Input';
 
 function getExpenseTableData(expenses: Expense[]) {
     const expenseMap = {
@@ -51,7 +46,7 @@ function getIncomesVsExpensesBarChartData(startDate: Date, expensesTotal: Expens
     const labels = [];
     for (let index = 0; index < incomesTotal.length; index++) {
         labels.push(startDate.toLocaleDateString("pt-BR", { month: "long" }).toUpperCase());
-        startDate.setMonth(startDate.getMonth() + 1);
+        startDate.setMonth(startDate.getMonth() - 1);
     }
 
     return {
@@ -69,8 +64,8 @@ function getLastMonthRelationData(expensesTotal: ExpenseTotal[], incomesTotal: I
 
     if (currentMonthBalance === 0 || lastMonthBalance === 0) return "+ 0%";
     
-    const relation = (currentMonthBalance - lastMonthBalance) * 100 / lastMonthBalance;
-    return relation >= 0 ? `+ ${relation}%` : `- ${relation}%`;
+    const relation = Math.floor((currentMonthBalance - lastMonthBalance) * 100 / lastMonthBalance);
+    return relation >= 0 ? `+ ${Math.abs(relation)}%` : `- ${Math.abs(relation)}%`;
 }
 
 export default function Main() {
@@ -82,7 +77,7 @@ export default function Main() {
         incomesTotal: IncomeTotal[]
     }>();
 
-    const [selectedDate, setSelectedDate] = useState<Dayjs | null>(dayjs(new Date()));
+    const [selectedDate, setSelectedDate] = useState<Date>(() => new Date());
     const [tableData, setTableData] = useState<string[][]>(getExpenseTableData(data.expenses));
     const [expensesByCategoryPieData, setExpensesByCategoryPieData] = useState<PieValueType[]>(getExpensesByCategoryPieData(data.expensesSummarized));
     const [incomesVsExpensesBarChartData, setIncomesVsExpensesBarChartData] = useState<{ labels: string[], incomeData: number[], expenseData: number[] }>(getIncomesVsExpensesBarChartData(new Date(), data.expensesTotal, data.incomesTotal));
@@ -94,8 +89,9 @@ export default function Main() {
         const updateExpenses = async () => {
             try {
                 if (selectedDate) {
-                    const expenses = await expenseService.getExpensesByMonth(selectedDate.toDate());
-                    const expensesSummarized = await expenseService.getExpensesSummarizedByMonth(selectedDate.toDate());
+                    const selectedDateCopy = new Date(selectedDate);
+                    const expenses = await expenseService.getExpensesByMonth(selectedDateCopy);
+                    const expensesSummarized = await expenseService.getExpensesSummarizedByMonth(selectedDateCopy);
 
                     setTableData(getExpenseTableData(expenses));
                     setExpensesByCategoryPieData(getExpensesByCategoryPieData(expensesSummarized));
@@ -108,7 +104,8 @@ export default function Main() {
         const updateIncomes = async () => {
             try {
                 if (selectedDate) {
-                    const incomes = await incomeService.getIncomesByMonth(selectedDate.toDate());
+                    const selectedDateCopy = new Date(selectedDate);
+                    const incomes = await incomeService.getIncomesByMonth(selectedDateCopy);
 
                     setIncomeTotal(incomes.reduce((acc, current) => acc += Number(current.amount), 0));
                 }
@@ -119,23 +116,25 @@ export default function Main() {
         const updateBarChart = async () => {
             try {
                 if (selectedDate) {
+                    const selectedDateCopy = new Date(selectedDate);
+
                     const [incomesTotal, expensesTotal] = await Promise.all([
                         [
-                            await incomeService.getIncomesTotalByMonth(selectedDate.toDate()),
-                            await incomeService.getIncomesTotalByMonth(getMonthOffset(selectedDate.toDate(), 1)),
-                            await incomeService.getIncomesTotalByMonth(getMonthOffset(selectedDate.toDate(), 2)),
-                            await incomeService.getIncomesTotalByMonth(getMonthOffset(selectedDate.toDate(), 3)),
+                            await incomeService.getIncomesTotalByMonth(selectedDateCopy),
+                            await incomeService.getIncomesTotalByMonth(getMonthOffset(selectedDateCopy, -1)),
+                            await incomeService.getIncomesTotalByMonth(getMonthOffset(selectedDateCopy, -2)),
+                            await incomeService.getIncomesTotalByMonth(getMonthOffset(selectedDateCopy, -3)),
                         ],
                         [
-                            await expenseService.getExpensesTotalByMonth(selectedDate.toDate()),
-                            await expenseService.getExpensesTotalByMonth(getMonthOffset(selectedDate.toDate(), 1)),
-                            await expenseService.getExpensesTotalByMonth(getMonthOffset(selectedDate.toDate(), 2)),
-                            await expenseService.getExpensesTotalByMonth(getMonthOffset(selectedDate.toDate(), 3)),
+                            await expenseService.getExpensesTotalByMonth(selectedDateCopy),
+                            await expenseService.getExpensesTotalByMonth(getMonthOffset(selectedDateCopy, -1)),
+                            await expenseService.getExpensesTotalByMonth(getMonthOffset(selectedDateCopy, -2)),
+                            await expenseService.getExpensesTotalByMonth(getMonthOffset(selectedDateCopy, -3)),
                         ]
                     ]);
 
                     setLastMonthRelation(getLastMonthRelationData(expensesTotal, incomesTotal));
-                    setIncomesVsExpensesBarChartData(getIncomesVsExpensesBarChartData(selectedDate.toDate(), expensesTotal, incomesTotal));
+                    setIncomesVsExpensesBarChartData(getIncomesVsExpensesBarChartData(selectedDateCopy, expensesTotal, incomesTotal));
                 }
             } catch (e) {
 
@@ -150,17 +149,14 @@ export default function Main() {
     return (
         <div className="flex flex-col items-center w-full">
             <div className="w-full flex justify-end mb-4">
-                <LocalizationProvider
-                    dateAdapter={AdapterDayjs}
-                    adapterLocale='pt'
-                    localeText={ptBR.components.MuiLocalizationProvider.defaultProps.localeText}
-                >
-                    <DatePicker
-                        views={['month', 'year']}
-                        value={selectedDate}
-                        onChange={(value) => setSelectedDate(value)}
+                <div className="w-3xs">
+                    <Input 
+                        type="date"
+                        label="Mês vigente"
+                        value={selectedDate.toLocaleDateString("en-CA")}
+                        onChange={(e) => { setSelectedDate(new Date(e.target.value + "T00:00:00")) }}
                     />
-                </LocalizationProvider>
+                </div>
             </div>
             <div
                 className="grid grid-cols-6 gap-6 w-full"

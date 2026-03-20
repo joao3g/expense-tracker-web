@@ -6,21 +6,28 @@ import { Select } from "../Select";
 import { listCategories } from "../../api/services/category.service";
 import { createExpense } from "../../api/services/expense.service";
 import { PaymentMethod } from "../../api/types/expense";
+import { useToast } from "../../hooks/useToast";
 
-export function AddExpenseModal({ open, onClose }: { open: boolean, onClose?: React.MouseEventHandler }) {
+export function AddExpenseModal({ open, onClose }: { open: boolean, onClose: React.MouseEventHandler }) {
     
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
     const [amount, setAmount] = useState(0);
     const [date, setDate] = useState(new Date());
-    const [paymentMethod, setPaymentMethod] = useState<typeof PaymentMethod[keyof typeof PaymentMethod]>();
+    const [paymentMethod, setPaymentMethod] = useState<typeof PaymentMethod[keyof typeof PaymentMethod]>("CREDIT");
     const [categoryId, setCategoryId] = useState("");
     const [categoryOptions, setCategoryOptions] = useState<{ value: string, title: string }[]>();
     
-    const [error, setError] = useState("");
-    
-    
-    async function insertExpense() {
+    const { addToast } = useToast();
+
+    function resetFields() {
+        setTitle("");
+        setDescription("");
+        setAmount(0);
+        setDate(new Date());
+    }
+
+    async function insertExpense(e: React.MouseEvent) {
         try {
             if (paymentMethod) {
                 const toInsert = {
@@ -33,9 +40,12 @@ export function AddExpenseModal({ open, onClose }: { open: boolean, onClose?: Re
                 };
                 
                 await createExpense(toInsert);
+                addToast("Despesa criada com sucesso!", "info");
+                resetFields();
+                onClose(e);
             }
         } catch (e) {
-            setError("Erro ao inserir despesa!");
+            addToast("Erro ao inserir despesa!", "error");
         }
     }
     
@@ -43,9 +53,10 @@ export function AddExpenseModal({ open, onClose }: { open: boolean, onClose?: Re
         async function updateCategoriesOptions() {
             try {
                 const categories = await listCategories();
+                setCategoryId(categories[0].id);
                 setCategoryOptions(categories.map(category => ({ value: category.id, title: category.title })));
             } catch (e) {
-                setError("Erro ao buscar categorias!");
+                addToast("Erro ao buscar categorias!", "error");
             }
         }
         
@@ -58,7 +69,7 @@ export function AddExpenseModal({ open, onClose }: { open: boolean, onClose?: Re
         <div className="fixed inset-0 z-900 bg-black/60 flex items-center justify-center" onClick={onClose}>
             <div className="flex flex-col gap-4 bg-white p-6 rounded w-4xl" onClick={(event) => event.stopPropagation()}>
                 <div className="flex flex-row justify-between">
-                    <h1 className="mb-4">Adicionar despesa</h1>
+                    <h1 className="mb-4 text-xl">Adicionar despesa</h1>
                     <X
                         onClick={onClose}
                         className="cursor-pointer"
@@ -68,14 +79,14 @@ export function AddExpenseModal({ open, onClose }: { open: boolean, onClose?: Re
                     type="text"
                     label="Título"
                     value={title}
-                    onChange={(e) => { setTitle(e.target.value); setError(""); }}
+                    onChange={(e) => { setTitle(e.target.value); }}
                 />
 
                 <Input
                     type="text"
                     label="Descrição"
                     value={description}
-                    onChange={(e) => { setDescription(e.target.value); setError(""); }}
+                    onChange={(e) => { setDescription(e.target.value); }}
                 />
 
                 <div className="flex flex-row gap-6">
@@ -83,7 +94,7 @@ export function AddExpenseModal({ open, onClose }: { open: boolean, onClose?: Re
                         type="number"
                         label="Valor (R$)"
                         value={amount}
-                        onChange={(e) => { setAmount(Number(e.target.value)); setError(""); }}
+                        onChange={(e) => { setAmount(Number(e.target.value)); }}
                     />
 
                     <Input
@@ -110,27 +121,22 @@ export function AddExpenseModal({ open, onClose }: { open: boolean, onClose?: Re
                             if (value) {
                                 setPaymentMethod(value);
                             }
-
-                            setError(""); 
                         }}
                     />
 
                     <Select
                         label="Categoria"
                         options={categoryOptions}
-                        onChange={(e) => { setCategoryId(e.target.value); setError(""); }}
+                        onChange={(e) => { setCategoryId(e.target.value); }}
                     />
                 </div>
 
                 <div className="flex flex-row gap-x-3 mt-6">
                     <Button
-                        onClick={insertExpense}
+                        onClick={(e) => insertExpense(e)}
                     >Cadastrar despesa</Button>
                     {/* <Button>Cadastrar</Button> */}
                 </div>
-                {error ? (
-                    <span className="text-red-500 text-sm">{error}</span>
-                ) : null}
             </div>
         </div>
     );

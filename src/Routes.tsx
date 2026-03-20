@@ -45,27 +45,30 @@ function authMiddleware() {
     return null;
 }
 
-async function getDashboardData() {
+async function getDashboardData({ request }: { request: Request }) {
     try {
         authMiddleware();
 
-        const now = new Date();
+        const url = new URL(request.url);
+        const dateParam = url.searchParams.get("date");
+        
+        const date = dateParam ? new Date(`${dateParam}T00:00`) : new Date();
 
         const [expenses, incomes, expensesSummarized, expensesTotal, incomesTotal] = await Promise.all([
-            await expenseService.getExpensesByMonth(now),
-            await incomeService.getIncomesByMonth(now),
-            await expenseService.getExpensesSummarizedByMonth(now),
+            await expenseService.getExpensesByMonth(getMonthOffset(date, 0)),
+            await incomeService.getIncomesByMonth(getMonthOffset(date, 0)),
+            await expenseService.getExpensesSummarizedByMonth(getMonthOffset(date, 0)),
             [
-                await expenseService.getExpensesTotalByMonth(now),
-                await expenseService.getExpensesTotalByMonth(getMonthOffset(now, -1)),
-                await expenseService.getExpensesTotalByMonth(getMonthOffset(now, -2)),
-                await expenseService.getExpensesTotalByMonth(getMonthOffset(now, -3)),
+                await expenseService.getExpensesTotalByMonth(getMonthOffset(date, 0)),
+                await expenseService.getExpensesTotalByMonth(getMonthOffset(date, -1)),
+                await expenseService.getExpensesTotalByMonth(getMonthOffset(date, -2)),
+                await expenseService.getExpensesTotalByMonth(getMonthOffset(date, -3)),
             ],
             [
-                await expenseService.getExpensesTotalByMonth(now),
-                await expenseService.getExpensesTotalByMonth(getMonthOffset(now, -1)),
-                await expenseService.getExpensesTotalByMonth(getMonthOffset(now, -2)),
-                await expenseService.getExpensesTotalByMonth(getMonthOffset(now, -3)),
+                await incomeService.getIncomesTotalByMonth(getMonthOffset(date, 0)),
+                await incomeService.getIncomesTotalByMonth(getMonthOffset(date, -1)),
+                await incomeService.getIncomesTotalByMonth(getMonthOffset(date, -2)),
+                await incomeService.getIncomesTotalByMonth(getMonthOffset(date, -3)),
             ]
         ]);
 

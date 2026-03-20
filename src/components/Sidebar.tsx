@@ -8,7 +8,7 @@ import {
     LogOut
 } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
-import { useNavigate } from "react-router";
+import { useNavigate, useRevalidator } from "react-router";
 import { useState } from "react";
 import { AddExpenseModal } from "./modals/AddExpenseModal";
 
@@ -28,6 +28,7 @@ export function Sidebar() {
 
     const authContext = useAuth();
     const navigate = useNavigate();
+    const { revalidate } = useRevalidator();
 
     function logout() {
         authContext.logout();
@@ -38,7 +39,10 @@ export function Sidebar() {
         <>
             <AddExpenseModal 
                 open={expenseModalOpen}
-                onClose={() => setExpenseModalOpen(false)}
+                onClose={() => {
+                    setExpenseModalOpen(false);
+                    revalidate();
+                }}
             />
             <div
                 className="flex flex-row justify-end items-center gap-6 px-8 h-20 w-full absolute text-gray text-lg bg-neutral-200 border-b-1 border-neutral-300"

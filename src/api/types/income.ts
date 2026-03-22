@@ -1,3 +1,9 @@
+export type IncomeCreate = {
+    title: string
+    amount: number
+    date: string
+}
+
 export type Income = {
     id: string
     title: string
@@ -13,6 +19,13 @@ export type Income = {
         email: string
     },
     createdAt: Date
+}
+
+export type IncomeUpdate = {
+    id: string
+    title?: string
+    amount?: number
+    date?: string
 }
 
 export type IncomeTotal = {

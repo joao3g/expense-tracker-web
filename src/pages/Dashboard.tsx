@@ -1,14 +1,11 @@
 import { useEffect, useState } from 'react';
-import { useLoaderData, useRevalidator, useSearchParams } from "react-router";
+import { useLoaderData, useSearchParams } from "react-router";
 import { Card } from '../components/Card';
 import { Table } from '../components/Table';
 import PieChart from '../components/charts/PieChart';
 import BarChart from '../components/charts/BarChart';
 import type { Expense, ExpenseSummarized, ExpenseTotal } from '../api/types/expense';
 import type { Income, IncomeTotal } from '../api/types/income';
-import * as expenseService from '../api/services/expense.service';
-import * as incomeService from '../api/services/income.service';
-import type { PieValueType } from '@mui/x-charts';
 import { getMonthOffset } from '../utils';
 import { Input } from '../components/Input';
 

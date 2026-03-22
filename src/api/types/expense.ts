@@ -40,6 +40,10 @@ export type ExpenseSummarized = {
         categoryId: string,
         categoryTitle: string,
         categoryColor: string
+    }[],
+    summarizedByPaymentMethod: {
+        _sum: { amount: string },
+        paymentMethod: typeof PaymentMethod[keyof typeof PaymentMethod]
     }[]
 }
 

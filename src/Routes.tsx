@@ -1,14 +1,15 @@
 import { createBrowserRouter, redirect } from "react-router"
 import * as expenseService from "./api/services/expense.service"
 import * as incomeService from "./api/services/income.service"
-import LoginPage from "./pages/LoginPage"
+import LoginPage from "./pages/Login"
+import IncomesPage from "./pages/Incomes"
 import Dashboard from "./pages/Dashboard"
 import AppLayout from "./layouts/AppLayout"
 import { getMonthOffset } from "./utils"
 
 export const router = createBrowserRouter([
     {
-        path: "/login",
+        path: "/",
         element: <LoginPage />,
         loader: () => {
             if (localStorage.getItem("token")) throw redirect("/dashboard")
@@ -28,8 +29,17 @@ export const router = createBrowserRouter([
                 path: "/dashboard"
             },
             {
-                path: "/group",
-                element: <h1>/Group</h1>,
+                loader: getIncomes,
+                path: "/incomes",
+                element: <IncomesPage />,
+            },
+            {
+                path: "/expenses",
+                element: <h1>/expenses</h1>,
+            },
+            {
+                path: "/categories",
+                element: <h1>/categories</h1>,
             },
         ],
     },
@@ -73,6 +83,30 @@ async function getDashboardData({ request }: { request: Request }) {
         ]);
 
         return { expenses, incomes, expensesSummarized, expensesTotal, incomesTotal };
+    } catch (e) {
+        if (e instanceof Response) {
+            throw e;
+        }
+
+        throw redirect("/error");
+    }
+}
+
+async function getIncomes({ request }: { request: Request }) {
+    try {
+        authMiddleware();
+
+        const url = new URL(request.url);
+        const dateParam = url.searchParams.get("date");
+        
+        const date = dateParam ? new Date(`${dateParam}T00:00`) : new Date();
+
+        const [incomes, incomesTotal] = await Promise.all([
+            await incomeService.getIncomesByMonth(getMonthOffset(date, 0)),
+            await incomeService.getIncomesTotalByMonth(getMonthOffset(date, 0))
+        ]);
+
+        return { incomes, incomesTotal };
     } catch (e) {
         if (e instanceof Response) {
             throw e;

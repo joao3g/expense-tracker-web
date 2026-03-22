@@ -1,16 +1,18 @@
 import { 
     ScanEye, 
     LayoutDashboard, 
-    HandCoins, 
     Rows2, 
-    Settings,
     User,
-    LogOut
+    LogOut,
+    BanknoteArrowDown,
+    BanknoteArrowUp,
+    Settings
 } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
 import { useNavigate, useRevalidator } from "react-router";
 import { useState } from "react";
 import { AddExpenseModal } from "./modals/AddExpenseModal";
+import { Button } from "./Button";
 
 function SidebarButton(props: React.ButtonHTMLAttributes<HTMLButtonElement>) {
     return (
@@ -32,7 +34,7 @@ export function Sidebar() {
 
     function logout() {
         authContext.logout();
-        navigate("/login");
+        navigate("/");
     }
 
     return (
@@ -69,33 +71,38 @@ export function Sidebar() {
                     <div
                         className="border-b-2 border-emerald-900 bg-emerald-800 flex flex-col font-semibold py-4 px-8 gap-2"
                     >
-                        <SidebarButton onClick={() => console.log("Dashboard!")}>
+                        <SidebarButton onClick={() => navigate("/dashboard")}>
                             <LayoutDashboard />
                             Dashboard
                         </SidebarButton>
 
-                        <SidebarButton onClick={() => console.log("Despesas!")}>
-                            <HandCoins />
+                        <SidebarButton onClick={() => navigate("/incomes")}>
+                            <BanknoteArrowUp />
+                            Entradas
+                        </SidebarButton>
+
+                        <SidebarButton onClick={() => navigate("/expenses")}>
+                            <BanknoteArrowDown />
                             Despesas
                         </SidebarButton>
 
-                        <SidebarButton onClick={() => console.log("Categorias!")}>
+                        <SidebarButton onClick={() => navigate("/categories")}>
                             <Rows2 />
                             Categorias
                         </SidebarButton>
 
-                        <SidebarButton onClick={() => console.log("Configurações!")}>
+                        <SidebarButton onClick={() => navigate("/categories")}>
                             <Settings />
                             Configurações
                         </SidebarButton>
                     </div>
                 </div>
-                <button
-                    className="px-8 py-2 text-white font-semibold cursor-pointer rounded bg-emerald-700 max-w-max"
+                <Button
+                    color="emerald"
                     onClick={() => setExpenseModalOpen(true)}
                 >
                     Adicionar despesa
-                </button>
+                </Button>
             </nav>
         </>
     )

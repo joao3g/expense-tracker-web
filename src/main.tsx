@@ -8,7 +8,7 @@ import { ToastProvider } from './context/ToastContext.tsx';
 createRoot(document.getElementById('root')!).render(
     <AuthProvider>
         <ToastProvider>
-            <RouterProvider router={router} />,
+            <RouterProvider router={router} />
         </ToastProvider>
     </AuthProvider>
 );

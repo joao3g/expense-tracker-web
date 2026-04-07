@@ -23,7 +23,7 @@ function getExpenseTableData(expenses: Expense[]) {
             return [
                 expense.title,
                 expense.description || "Sem descrição",
-                Number(expense.amount).toLocaleString("pt-BR", { style: "currency", currency: "BRL" }),
+                Number(expense.amount),
                 expenseMap[expense.paymentMethod],
                 expense.category.title
             ]

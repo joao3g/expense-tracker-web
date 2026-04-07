@@ -38,14 +38,13 @@ export default function Main() {
 
     function getTableRows(expenses: Expense[]) {
         return expenses
-            .sort((a: Expense, b: Expense) => (new Date(b.transactionDate)).getTime() - (new Date(a.transactionDate)).getTime())
             .map(expense => {
                 return [
                     expense.title,
                     expense.description || "-",
-                    Number(expense.amount).toLocaleString("pt-BR", { style: "currency", currency: "BRL" }),
-                    (new Date(expense.transactionDate)).toLocaleDateString("pt-BR", { day: "2-digit", month: "long" }),
-                    (new Date(expense.dueDate)).toLocaleDateString("pt-BR", { day: "2-digit", month: "long" }),
+                    Number(expense.amount),
+                    (new Date(expense.transactionDate)),
+                    (new Date(expense.dueDate)),
                     paymentMethodMapped[expense.paymentMethod] || "Não encontrado",
                     expense.category.title,
                     { icon: <Edit className="cursor-pointer" />, callback: () => { setSelectedExpense(expense); setEditModalOpen(true); } },
@@ -146,6 +145,7 @@ export default function Main() {
                                     <Table
                                         header={["Título", "Descrição", "Valor", "Data da compra", "Data do pagamento", "Forma de pagamento", "Categoria"]}
                                         rows={tableRows}
+                                        sortBy={{ index: 3, type: "DESC" }}
                                     /> :
                                     <span className="mb-4 text-xl italic">Não há dados para o período selecionado</span>
                             }

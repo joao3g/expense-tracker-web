@@ -34,7 +34,7 @@ export default function Main() {
         return incomes.map(income => {
             return [
                 income.title,
-                Number(income.amount).toLocaleString("pt-BR", { style: "currency", currency: "BRL" }),
+                Number(income.amount),
                 income.user.name,
                 { icon: <Edit className="cursor-pointer" />, callback: () => { setSelectedIncome(income); setEditModalOpen(true); } },
                 { icon: <Trash color="red" className="cursor-pointer" />, callback: () => { setSelectedIncome(income); setConfirmModalOpen(true); } }
@@ -134,6 +134,7 @@ export default function Main() {
                                     <Table
                                         header={["Título", "Valor", "Usuário"]}
                                         rows={tableRows}
+                                        sortBy={{ index: 1, type: "DESC" }}
                                     /> :
                                     <span className="mb-4 text-xl italic">Não há dados para o período selecionado</span>
                             }

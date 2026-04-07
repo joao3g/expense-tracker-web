@@ -16,15 +16,18 @@ function getExpenseTableData(expenses: Expense[]) {
         "VOUCHER": "Vale"
     }
 
-    return expenses.slice(0, 5).map(expense => {
-        return [
-            expense.title,
-            expense.description || "Sem descrição",
-            Number(expense.amount).toLocaleString("pt-BR", { style: "currency", currency: "BRL" }),
-            expenseMap[expense.paymentMethod],
-            expense.category.title
-        ]
-    });
+    return expenses
+        .sort((a: Expense, b: Expense) => (new Date(b.createdAt)).getTime() - (new Date(a.createdAt)).getTime())
+        .slice(0, 5)
+        .map(expense => {
+            return [
+                expense.title,
+                expense.description || "Sem descrição",
+                Number(expense.amount).toLocaleString("pt-BR", { style: "currency", currency: "BRL" }),
+                expenseMap[expense.paymentMethod],
+                expense.category.title
+            ]
+        });
 }
 
 function getExpensesByCategoryPieData(expensesSummarized: ExpenseSummarized) {

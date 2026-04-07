@@ -50,7 +50,7 @@ export function Table(props: CustomTableProps) {
                                             key={index}
                                             onClick={(e) => item.callback()}
                                         >
-                                            {item.icon}
+                                            {item?.icon}
                                         </td>
                                     )
                                 })

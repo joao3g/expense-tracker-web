@@ -3,6 +3,7 @@ import * as expenseService from "./api/services/expense.service"
 import * as incomeService from "./api/services/income.service"
 import LoginPage from "./pages/Login"
 import IncomesPage from "./pages/Incomes"
+import ExpensesPage from "./pages/Expenses"
 import Dashboard from "./pages/Dashboard"
 import AppLayout from "./layouts/AppLayout"
 import { getMonthOffset } from "./utils"
@@ -34,8 +35,9 @@ export const router = createBrowserRouter([
                 element: <IncomesPage />,
             },
             {
+                loader: getExpenses,
                 path: "/expenses",
-                element: <h1>/expenses</h1>,
+                element: <ExpensesPage />,
             },
             {
                 path: "/categories",
@@ -107,6 +109,30 @@ async function getIncomes({ request }: { request: Request }) {
         ]);
 
         return { incomes, incomesTotal };
+    } catch (e) {
+        if (e instanceof Response) {
+            throw e;
+        }
+
+        throw redirect("/error");
+    }
+}
+
+async function getExpenses({ request }: { request: Request }) {
+    try {
+        authMiddleware();
+
+        const url = new URL(request.url);
+        const dateParam = url.searchParams.get("date");
+        
+        const date = dateParam ? new Date(`${dateParam}T00:00`) : new Date();
+
+        const [expenses, expensesTotal] = await Promise.all([
+            await expenseService.getExpensesByMonth(getMonthOffset(date, 0)),
+            await expenseService.getExpensesTotalByMonth(getMonthOffset(date, 0))
+        ]);
+
+        return { expenses, expensesTotal };
     } catch (e) {
         if (e instanceof Response) {
             throw e;

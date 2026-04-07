@@ -1,8 +1,12 @@
 import { api } from "./client";
-import type { ExpenseCreate, Expense, ExpenseSummarized, ExpenseTotal } from "../types/expense";
+import type { ExpenseCreate, Expense, ExpenseSummarized, ExpenseTotal, ExpenseUpdate } from "../types/expense";
 
 export const createExpense = async (expenseData: ExpenseCreate) => {
     await api.post<void>(`/expense/create`, expenseData);
+}
+
+export const updateExpense = async (expenseData: ExpenseUpdate) => {
+    await api.patch<void>(`/expense/update`, expenseData);
 }
 
 export const getExpensesByMonth = async (date: Date) => {
@@ -33,4 +37,8 @@ export const getExpensesTotalByMonth = async (date: Date) => {
     });
 
     return data;
+};
+
+export const deleteExpense = async (incomeId: string) => {
+    await api.delete<void>(`/expense/remove/${incomeId}`);
 };

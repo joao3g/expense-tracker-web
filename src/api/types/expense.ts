@@ -13,11 +13,23 @@ export type ExpenseCreate = {
     category: string
 }
 
+export type ExpenseUpdate = {
+    id: string
+    title?: string
+    description?: string
+    amount?: number
+    date?: string
+    paymentMethod?: typeof PaymentMethod[keyof typeof PaymentMethod]
+    category?: string
+}
+
 export type Expense = {
+    id: string
     title: string
     description?: string
     amount: string
-    date: Date
+    transactionDate: Date
+    dueDate: Date
     paymentMethod: typeof PaymentMethod[keyof typeof PaymentMethod]
     category: {
         id: string

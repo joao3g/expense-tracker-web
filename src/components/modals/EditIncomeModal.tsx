@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Input } from "../Input";
 import { Button } from "../Button";
 import { X } from "lucide-react";
@@ -10,8 +10,16 @@ export function EditIncomeModal({ open, data, onClose }: { open: boolean, data: 
     const [title, setTitle] = useState(data.title);
     const [amount, setAmount] = useState(Number(data.amount));
     const [date, setDate] = useState(new Date(String(data.date).split("T")[0] + "T00:00"));
-    
+
     const { addToast } = useToast();
+
+    useEffect(() => {
+        if (open) {
+            setTitle(data.title);
+            setAmount(Number(data.amount));
+            setDate(new Date(String(data.date).split("T")[0] + "T00:00"));
+        }
+    }, [open]);
 
     async function insertIncome(e: React.MouseEvent) {
         try {
@@ -21,7 +29,7 @@ export function EditIncomeModal({ open, data, onClose }: { open: boolean, data: 
                 amount,
                 date: date.toLocaleDateString("en-CA")
             };
-            
+
             await updateIncome(toUpdate);
             addToast("Entrada editada com sucesso!", "success");
             onClose(e);
@@ -29,7 +37,7 @@ export function EditIncomeModal({ open, data, onClose }: { open: boolean, data: 
             addToast("Erro ao editar entrada!", "error");
         }
     }
-    
+
     if (!open) return null;
 
     return (
@@ -51,16 +59,16 @@ export function EditIncomeModal({ open, data, onClose }: { open: boolean, data: 
 
                 <div className="flex flex-row gap-6">
                     <Input
-                        type="number"
+                        type="text"
                         label="Valor (R$)"
-                        value={amount}
-                        onChange={(e) => { setAmount(Number(e.target.value)); }}
+                        value={amount.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                        onChange={(e) => { setAmount(Number(e.target.value.replace(/\D/g, "") || 0) / 100); }}
                     />
 
                     <Input
                         type="date"
                         label="Data"
-                        
+
                         value={date.toLocaleDateString("en-CA")}
                         onChange={(e) => { setDate(new Date(e.target.value + "T00:00:00")) }}
                     />

@@ -9,7 +9,7 @@ import { PaymentMethod } from "../../api/types/expense";
 import { useToast } from "../../hooks/useToast";
 
 export function AddExpenseModal({ open, onClose }: { open: boolean, onClose: React.MouseEventHandler }) {
-    
+
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
     const [amount, setAmount] = useState(0);
@@ -17,7 +17,7 @@ export function AddExpenseModal({ open, onClose }: { open: boolean, onClose: Rea
     const [paymentMethod, setPaymentMethod] = useState<typeof PaymentMethod[keyof typeof PaymentMethod]>("CREDIT");
     const [categoryId, setCategoryId] = useState("");
     const [categoryOptions, setCategoryOptions] = useState<{ value: string, title: string }[]>();
-    
+
     const { addToast } = useToast();
 
     function resetFields() {
@@ -38,7 +38,7 @@ export function AddExpenseModal({ open, onClose }: { open: boolean, onClose: Rea
                     paymentMethod,
                     category: categoryId
                 };
-                
+
                 await createExpense(toInsert);
                 addToast("Despesa criada com sucesso!", "info");
                 resetFields();
@@ -48,21 +48,23 @@ export function AddExpenseModal({ open, onClose }: { open: boolean, onClose: Rea
             addToast("Erro ao inserir despesa!", "error");
         }
     }
-    
+
     useEffect(() => {
         async function updateCategoriesOptions() {
             try {
                 const categories = await listCategories();
-                setCategoryId(categories[0].id);
-                setCategoryOptions(categories.map(category => ({ value: category.id, title: category.title })));
+                if (categories.length > 0) {
+                    setCategoryId(categories[0].id);
+                    setCategoryOptions(categories.map(category => ({ value: category.id, title: category.title })));
+                }
             } catch (e) {
                 addToast("Erro ao buscar categorias!", "error");
             }
         }
-        
+
         updateCategoriesOptions();
     }, []);
-    
+
     if (!open) return null;
 
     return (
@@ -91,10 +93,10 @@ export function AddExpenseModal({ open, onClose }: { open: boolean, onClose: Rea
 
                 <div className="flex flex-row gap-6">
                     <Input
-                        type="number"
+                        type="text"
                         label="Valor (R$)"
-                        value={amount}
-                        onChange={(e) => { setAmount(Number(e.target.value)); }}
+                        value={amount.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                        onChange={(e) => { setAmount(Number(e.target.value.replace(/\D/g, "") || 0) / 100); }}
                     />
 
                     <Input
@@ -114,7 +116,7 @@ export function AddExpenseModal({ open, onClose }: { open: boolean, onClose: Rea
                             { value: "DEBIT", title: "Débito" },
                             { value: "VOUCHER", title: "Vale" }
                         ]}
-                        onChange={(e) => { 
+                        onChange={(e) => {
                             const acceptableValues = [PaymentMethod.CREDIT, PaymentMethod.DEBIT, PaymentMethod.VOUCHER];
                             const value = acceptableValues.find(value => e.target.value === value);
 
@@ -133,6 +135,7 @@ export function AddExpenseModal({ open, onClose }: { open: boolean, onClose: Rea
 
                 <div className="flex flex-row gap-x-3 mt-6">
                     <Button
+                        color="green"
                         onClick={(e) => insertExpense(e)}
                     >Cadastrar despesa</Button>
                     {/* <Button>Cadastrar</Button> */}

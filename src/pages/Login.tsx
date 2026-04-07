@@ -18,7 +18,6 @@ function Main() {
         try {
             const result = await authService.login(login, password);
 
-            
             authContext.login(result.token, result.user);
             return navigate("/dashboard");
         } catch (error) {
@@ -47,7 +46,12 @@ function Main() {
                 />
 
                 <div className="flex flex-row gap-x-3">
-                    <Button onClick={handleLogin}>Login</Button>
+                    <Button 
+                        color="green"
+                        onClick={handleLogin}
+                    >
+                        Login
+                    </Button>
                     {/* <Button>Cadastrar</Button> */}
                 </div>
                 {error ? (

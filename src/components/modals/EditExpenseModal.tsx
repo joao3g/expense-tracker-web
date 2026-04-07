@@ -1,40 +1,45 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Input } from "../Input";
 import { Button } from "../Button";
 import { X } from "lucide-react";
-import { createIncome } from "../../api/services/income.service";
+import { updateExpense } from "../../api/services/expense.service";
 import { useToast } from "../../hooks/useToast";
+import type { Expense } from "../../api/types/expense";
 
-export function AddIncomeModal({ open, onClose }: { open: boolean, onClose: React.MouseEventHandler }) {
-    
-    const [title, setTitle] = useState("");
-    const [amount, setAmount] = useState(0);
-    const [date, setDate] = useState(new Date());
+export function EditExpenseModal({ open, data, onClose }: { open: boolean, data: Expense, onClose: React.MouseEventHandler }) {
+    const [title, setTitle] = useState(data.title);
+    const [description, setDescription] = useState(data.description);
+    const [amount, setAmount] = useState(Number(data.amount));
+    const [date, setDate] = useState(new Date(String(data.transactionDate).split("T")[0] + "T00:00"));
     
     const { addToast } = useToast();
 
-    function resetFields() {
-        setTitle("");
-        setAmount(0);
-        setDate(new Date());
-    }
-
-    async function insertIncome(e: React.MouseEvent) {
+    async function insertExpense(e: React.MouseEvent) {
         try {
-            const toInsert = {
+            const toUpdate = {
+                id: data.id,
                 title,
+                description,
                 amount,
                 date: date.toLocaleDateString("en-CA")
             };
             
-            await createIncome(toInsert);
-            addToast("Entrada criada com sucesso!", "info");
-            resetFields();
+            await updateExpense(toUpdate);
+            addToast("Despesa editada com sucesso!", "success");
             onClose(e);
         } catch (e) {
-            addToast("Erro ao inserir entrada!", "error");
+            addToast("Erro ao editar despesa!", "error");
         }
     }
+
+    useEffect(() => {
+        if (open) {
+            setTitle(data.title);
+            setDescription(data.description);
+            setAmount(Number(data.amount));
+            setDate(new Date(String(data.transactionDate).split("T")[0] + "T00:00"));
+        }
+    }, [open]);
     
     if (!open) return null;
 
@@ -42,7 +47,7 @@ export function AddIncomeModal({ open, onClose }: { open: boolean, onClose: Reac
         <div className="fixed inset-0 z-900 bg-black/60 flex items-center justify-center" onClick={onClose}>
             <div className="flex flex-col gap-4 bg-white p-6 rounded w-4xl" onClick={(event) => event.stopPropagation()}>
                 <div className="flex flex-row justify-between">
-                    <h1 className="mb-4 text-xl">Adicionar entrada</h1>
+                    <h1 className="mb-4 text-xl">Editar despesa</h1>
                     <X
                         onClick={onClose}
                         className="cursor-pointer"
@@ -53,6 +58,13 @@ export function AddIncomeModal({ open, onClose }: { open: boolean, onClose: Reac
                     label="Título"
                     value={title}
                     onChange={(e) => { setTitle(e.target.value); }}
+                />
+
+                <Input
+                    type="text"
+                    label="Descrição"
+                    value={description}
+                    onChange={(e) => { setDescription(e.target.value); }}
                 />
 
                 <div className="flex flex-row gap-6">
@@ -66,6 +78,7 @@ export function AddIncomeModal({ open, onClose }: { open: boolean, onClose: Reac
                     <Input
                         type="date"
                         label="Data"
+                        
                         value={date.toLocaleDateString("en-CA")}
                         onChange={(e) => { setDate(new Date(e.target.value + "T00:00:00")) }}
                     />
@@ -75,8 +88,8 @@ export function AddIncomeModal({ open, onClose }: { open: boolean, onClose: Reac
                 <div className="flex flex-row gap-x-3 mt-6">
                     <Button
                         color="emerald"
-                        onClick={(e) => insertIncome(e)}
-                    >Cadastrar entrada</Button>
+                        onClick={(e) => insertExpense(e)}
+                    >Editar despesa</Button>
                     {/* <Button>Cadastrar</Button> */}
                 </div>
             </div>

@@ -9,13 +9,13 @@ import type { Income, IncomeTotal } from '../api/types/income';
 import { getMonthOffset } from '../utils';
 import { Input } from '../components/Input';
 
-function getExpenseTableData(expenses: Expense[]) {
-    const expenseMap = {
-        "CREDIT": "Crédito",
-        "DEBIT": "Débito",
-        "VOUCHER": "Vale"
-    }
+const PAYMENT_METHOD_MAP = {
+    "CREDIT": "Crédito",
+    "DEBIT": "Débito",
+    "VOUCHER": "Vale"
+}
 
+function getExpenseTableData(expenses: Expense[]) {
     return expenses
         .sort((a: Expense, b: Expense) => (new Date(b.createdAt)).getTime() - (new Date(a.createdAt)).getTime())
         .slice(0, 5)
@@ -24,7 +24,7 @@ function getExpenseTableData(expenses: Expense[]) {
                 expense.title,
                 expense.description || "Sem descrição",
                 Number(expense.amount),
-                expenseMap[expense.paymentMethod],
+                PAYMENT_METHOD_MAP[expense.paymentMethod],
                 expense.category.title
             ]
         });
@@ -36,6 +36,26 @@ function getExpensesByCategoryPieData(expensesSummarized: ExpenseSummarized) {
             value: Number(item._sum.amount),
             color: "#" + item.categoryColor,
             label: item.categoryTitle
+        }
+    });
+}
+
+function getExpensesByTitlePieData(expensesSummarized: ExpenseSummarized) {
+    return expensesSummarized.summarizedByTitle.map(item => {
+        return {
+            value: Number(item._sum.amount),
+            // color: "#" + item.categoryColor,
+            label: item.title
+        }
+    });
+}
+
+function getExpensesByPaymentMethodPieData(expensesSummarized: ExpenseSummarized) {
+    return expensesSummarized.summarizedByPaymentMethod.map(item => {
+        return {
+            value: Number(item._sum.amount),
+            // color: "#" + item.categoryColor,
+            label: PAYMENT_METHOD_MAP[item.paymentMethod]
         }
     });
 }
@@ -83,6 +103,8 @@ export default function Main() {
 
     const tableData = getExpenseTableData(data.expenses);
     const expensesByCategoryPieData = getExpensesByCategoryPieData(data.expensesSummarized);
+    const expensesByTitlePieData = getExpensesByTitlePieData(data.expensesSummarized);
+    const expensesByPaymentMethodPieData = getExpensesByPaymentMethodPieData(data.expensesSummarized);
     const incomesVsExpensesBarChartData = getIncomesVsExpensesBarChartData(new Date(selectedDate), data.expensesTotal, data.incomesTotal);
     const incomeTotal = data.incomes.reduce((acc, current) => acc += Number(current.amount), 0);
     const expenseTotal = data.expenses.reduce((acc, current) => acc += Number(current.amount), 0);
@@ -146,10 +168,10 @@ export default function Main() {
                     />
                 </div>
 
-                <div className="col-span-4">
+                <div className="col-span-6">
                     <div className="flex flex-col gap-6 justify-center items-center rounded-2xl bg-white border-1 border-neutral-100">
                         <div className="w-full bg-neutral-100 rounded-t-2xl py-4 flex pl-10 items-center border-b-1 border-neutral-100">
-                            <h2 className="text-2xl font-semibold">Últimas despesas</h2>
+                            <h2 className="text-2xl font-semibold">Últimas saídas</h2>
                         </div>
                         {
                             tableData.length ?
@@ -171,6 +193,33 @@ export default function Main() {
                         <div className="flex items-center justify-center w-full px-8 py-4">
                             <PieChart
                                 data={expensesByCategoryPieData}
+                            />
+                        </div>
+                    </div>
+                </div>
+
+                <div className="col-span-2">
+                    <div className="flex flex-col justify-center items-center rounded-2xl bg-white border-1 border-neutral-100">
+                        <div className="w-full bg-neutral-100 rounded-t-2xl py-4 flex pl-10 items-center border-b-1 border-neutral-100">
+                            <h2 className="text-2xl font-semibold">Gastos por título</h2>
+                        </div>
+                        <div className="flex items-center justify-center w-full px-8 py-4">
+                            <PieChart
+                                data={expensesByTitlePieData}
+                                collapse
+                            />
+                        </div>
+                    </div>
+                </div>
+
+                <div className="col-span-2">
+                    <div className="flex flex-col justify-center items-center rounded-2xl bg-white border-1 border-neutral-100">
+                        <div className="w-full bg-neutral-100 rounded-t-2xl py-4 flex pl-10 items-center border-b-1 border-neutral-100">
+                            <h2 className="text-2xl font-semibold">Gastos por forma de pagamento</h2>
+                        </div>
+                        <div className="flex items-center justify-center w-full px-8 py-4">
+                            <PieChart
+                                data={expensesByPaymentMethodPieData}
                             />
                         </div>
                     </div>

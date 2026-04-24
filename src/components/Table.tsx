@@ -51,7 +51,7 @@ export function Table(props: CustomTableProps) {
             return (<td
                 className="border-y border-neutral-200 py-2 px-1 max-w-max"
                 key={index}
-                onClick={(e) => item.callback()}
+                onClick={() => item.callback()}
             >
                 {item?.icon}
             </td>);

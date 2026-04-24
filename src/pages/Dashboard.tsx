@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useLoaderData, useSearchParams } from "react-router";
 import { Card } from '../components/Card';
 import { Table } from '../components/Table';

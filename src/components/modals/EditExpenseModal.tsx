@@ -25,10 +25,10 @@ export function EditExpenseModal({ open, data, onClose }: { open: boolean, data:
             };
             
             await updateExpense(toUpdate);
-            addToast("Despesa editada com sucesso!", "success");
+            addToast("Saída editada com sucesso!", "success");
             onClose(e);
         } catch (e) {
-            addToast("Erro ao editar despesa!", "error");
+            addToast("Erro ao editar saída!", "error");
         }
     }
 
@@ -47,7 +47,7 @@ export function EditExpenseModal({ open, data, onClose }: { open: boolean, data:
         <div className="fixed inset-0 z-900 bg-black/60 flex items-center justify-center" onClick={onClose}>
             <div className="flex flex-col gap-4 bg-white p-6 rounded w-4xl" onClick={(event) => event.stopPropagation()}>
                 <div className="flex flex-row justify-between">
-                    <h1 className="mb-4 text-xl">Editar despesa</h1>
+                    <h1 className="mb-4 text-xl">Editar saída</h1>
                     <X
                         onClick={onClose}
                         className="cursor-pointer"
@@ -89,7 +89,7 @@ export function EditExpenseModal({ open, data, onClose }: { open: boolean, data:
                     <Button
                         color="emerald"
                         onClick={(e) => insertExpense(e)}
-                    >Editar despesa</Button>
+                    >Editar saída</Button>
                     {/* <Button>Cadastrar</Button> */}
                 </div>
             </div>

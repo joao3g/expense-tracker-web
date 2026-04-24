@@ -40,12 +40,12 @@ export function AddExpenseModal({ open, onClose }: { open: boolean, onClose: Rea
                 };
 
                 await createExpense(toInsert);
-                addToast("Despesa criada com sucesso!", "info");
+                addToast("Saída criada com sucesso!", "info");
                 resetFields();
                 onClose(e);
             }
         } catch (e) {
-            addToast("Erro ao inserir despesa!", "error");
+            addToast("Erro ao inserir saída!", "error");
         }
     }
 
@@ -71,7 +71,7 @@ export function AddExpenseModal({ open, onClose }: { open: boolean, onClose: Rea
         <div className="fixed inset-0 z-900 bg-black/60 flex items-center justify-center" onClick={onClose}>
             <div className="flex flex-col gap-4 bg-white p-6 rounded w-4xl" onClick={(event) => event.stopPropagation()}>
                 <div className="flex flex-row justify-between">
-                    <h1 className="mb-4 text-xl">Adicionar despesa</h1>
+                    <h1 className="mb-4 text-xl">Adicionar saída</h1>
                     <X
                         onClick={onClose}
                         className="cursor-pointer"
@@ -101,7 +101,7 @@ export function AddExpenseModal({ open, onClose }: { open: boolean, onClose: Rea
 
                     <Input
                         type="date"
-                        label="Data da despesa"
+                        label="Data da saída"
                         value={date.toLocaleDateString("en-CA")}
                         onChange={(e) => { setDate(new Date(e.target.value + "T00:00:00")) }}
                     />
@@ -137,7 +137,7 @@ export function AddExpenseModal({ open, onClose }: { open: boolean, onClose: Rea
                     <Button
                         color="green"
                         onClick={(e) => insertExpense(e)}
-                    >Cadastrar despesa</Button>
+                    >Cadastrar saída</Button>
                     {/* <Button>Cadastrar</Button> */}
                 </div>
             </div>

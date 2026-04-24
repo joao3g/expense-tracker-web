@@ -6,6 +6,10 @@ export const getMonthOffset = (date: Date, offset: number) => {
     return finalDate;
 }
 
+export const getDateInCurrentOffset = (date: Date) => {
+    return new Date(date.toISOString().split("T")[0] + "T00:00");
+}
+
 export const formatMoney = (value: string) => {
     let result: string | number = Number(value.replace(/\D/g, ''));
     result = (result / 100).toLocaleString('pt-BR', {

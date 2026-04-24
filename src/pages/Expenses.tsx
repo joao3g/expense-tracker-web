@@ -10,6 +10,7 @@ import { useToast } from '../hooks/useToast';
 import { EditExpenseModal } from '../components/modals/EditExpenseModal';
 import { AddExpenseModal } from '../components/modals/AddExpenseModal';
 import { deleteExpense } from '../api/services/expense.service';
+import { getDateInCurrentOffset } from '../utils';
 
 const paymentMethodMapped = {
     CREDIT: "Crédito",
@@ -43,8 +44,8 @@ export default function Main() {
                     expense.title,
                     expense.description || "-",
                     Number(expense.amount),
-                    (new Date(expense.transactionDate)),
-                    (new Date(expense.dueDate)),
+                    getDateInCurrentOffset(new Date(expense.transactionDate)),
+                    getDateInCurrentOffset(new Date(expense.dueDate)),
                     paymentMethodMapped[expense.paymentMethod] || "Não encontrado",
                     expense.category.title,
                     { icon: <Edit className="cursor-pointer" />, callback: () => { setSelectedExpense(expense); setEditModalOpen(true); } },
@@ -69,7 +70,7 @@ export default function Main() {
         try {
             if (selectedExpense) await deleteExpense(selectedExpense.id);
             revalidate();
-            addToast(`Despesa "${selectedExpense?.title}" excluída!`, "info");
+            addToast(`Saída "${selectedExpense?.title}" excluída!`, "info");
             setSelectedExpense(undefined);
         } catch {
             addToast(`Falha ao excluir "${selectedExpense?.title}"!`, "error");
@@ -97,7 +98,7 @@ export default function Main() {
 
             <ConfirmActionModal
                 title="Confirmar exclusão"
-                description={<span>Tem certeza que deseja deletar a despesa <b><i>{selectedExpense?.title}</i>: <i>{selectedExpense?.description}</i></b>?</span>}
+                description={<span>Tem certeza que deseja deletar a saída <b><i>{selectedExpense?.title}</i>: <i>{selectedExpense?.description}</i></b>?</span>}
                 color="red"
                 open={confirmModalOpen}
                 onSuccess={() => { deleteSelectedExpense(); setConfirmModalOpen(false); }}
@@ -110,7 +111,7 @@ export default function Main() {
                         color="emerald"
                         onClick={() => setAddModalOpen(true)}
                     >
-                        Adicionar despesa
+                        Adicionar saída
                     </Button>
                     <div className="w-3xs">
                         <Input
@@ -134,7 +135,7 @@ export default function Main() {
                                 <h2
                                     className="text-2xl font-semibold"
                                 >
-                                    {`Despesas no mês de ${selectedDate.toLocaleString("pt-BR", { month: "long" })}`}
+                                    {`Saídas no mês de ${selectedDate.toLocaleString("pt-BR", { month: "long" })}`}
                                 </h2>
                                 <h6>
                                     {`Total: ${data.expenses.reduce((acc, currentValue) => acc + Number(currentValue.amount), 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}`}

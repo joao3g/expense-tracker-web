@@ -83,7 +83,7 @@ export function Sidebar() {
 
                         <SidebarButton onClick={() => navigate("/expenses")}>
                             <BanknoteArrowDown />
-                            Despesas
+                            Saídas
                         </SidebarButton>
 
                         <SidebarButton onClick={() => navigate("/categories")}>
@@ -101,7 +101,7 @@ export function Sidebar() {
                     color="emerald"
                     onClick={() => setExpenseModalOpen(true)}
                 >
-                    Adicionar despesa
+                    Adicionar saída
                 </Button>
             </nav>
         </>

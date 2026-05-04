@@ -30,14 +30,22 @@ function getExpenseTableData(expenses: Expense[]) {
         });
 }
 
-function getExpensesByCategoryPieData(expensesSummarized: ExpenseSummarized) {
-    return expensesSummarized.summarizedByCategory.map(item => {
-        return {
+function getExpensesByCategoryPieData(expensesSummarized: ExpenseSummarized, balance: number) {
+    const toReturn = balance > 0 ? [{
+        value: balance,
+        color: "#AAA",
+        label: "Restante"
+    }] : [];
+
+    expensesSummarized.summarizedByCategory.forEach(item => {
+        toReturn.push({
             value: Number(item._sum.amount),
             color: "#" + item.categoryColor,
             label: item.categoryTitle
-        }
+        });
     });
+
+    return toReturn;
 }
 
 function getExpensesByTitlePieData(expensesSummarized: ExpenseSummarized) {
@@ -83,7 +91,7 @@ function getLastMonthRelationData(expensesTotal: ExpenseTotal[], incomesTotal: I
     const lastMonthBalance = Number(incomesTotal[1]._sum.amount) - Number(expensesTotal[1]._sum.amount);
 
     if (currentMonthBalance === 0 || lastMonthBalance === 0) return "+ 0%";
-    
+
     const relation = Math.floor((currentMonthBalance - Math.abs(lastMonthBalance)) * 100 / lastMonthBalance);
     return relation >= 0 ? `+ ${Math.abs(relation)}%` : `- ${Math.abs(relation)}%`;
 }
@@ -96,19 +104,19 @@ export default function Main() {
         expensesTotal: ExpenseTotal[],
         incomesTotal: IncomeTotal[]
     }>();
-    
+
     const [searchParams, setSearchParams] = useSearchParams();
 
     const [selectedDate, setSelectedDate] = useState<Date>(initiateSelectedDate());
 
-    const tableData = getExpenseTableData(data.expenses);
-    const expensesByCategoryPieData = getExpensesByCategoryPieData(data.expensesSummarized);
-    const expensesByTitlePieData = getExpensesByTitlePieData(data.expensesSummarized);
-    const expensesByPaymentMethodPieData = getExpensesByPaymentMethodPieData(data.expensesSummarized);
-    const incomesVsExpensesBarChartData = getIncomesVsExpensesBarChartData(new Date(selectedDate), data.expensesTotal, data.incomesTotal);
     const incomeTotal = data.incomes.reduce((acc, current) => acc += Number(current.amount), 0);
     const expenseTotal = data.expenses.reduce((acc, current) => acc += Number(current.amount), 0);
     const lastMonthRelation = getLastMonthRelationData(data.expensesTotal, data.incomesTotal);
+    const tableData = getExpenseTableData(data.expenses);
+    const expensesByCategoryPieData = getExpensesByCategoryPieData(data.expensesSummarized, incomeTotal - expenseTotal);
+    const expensesByTitlePieData = getExpensesByTitlePieData(data.expensesSummarized);
+    const expensesByPaymentMethodPieData = getExpensesByPaymentMethodPieData(data.expensesSummarized);
+    const incomesVsExpensesBarChartData = getIncomesVsExpensesBarChartData(new Date(selectedDate), data.expensesTotal, data.incomesTotal);
 
     function handleDateChange(date: Date) {
         const formatted = date.toLocaleDateString("en-CA");
@@ -117,8 +125,8 @@ export default function Main() {
     }
 
     function initiateSelectedDate() {
-        const dateParam = searchParams.get("date"); 
-        
+        const dateParam = searchParams.get("date");
+
         return dateParam ? new Date(`${dateParam}T00:00`) : new Date();
     }
 
@@ -126,14 +134,14 @@ export default function Main() {
         <div className="flex flex-col items-center w-full">
             <div className="w-full flex justify-end mb-4">
                 <div className="w-3xs">
-                    <Input 
+                    <Input
                         type="date"
                         label="Mês vigente"
                         value={selectedDate.toLocaleDateString("en-CA")}
-                        onChange={(e) => { 
+                        onChange={(e) => {
                             const date = new Date(e.target.value + "T00:00:00");
                             setSelectedDate(date);
-                            handleDateChange(date); 
+                            handleDateChange(date);
                         }}
                     />
                 </div>

@@ -5,6 +5,7 @@ import LoginPage from "./pages/Login"
 import IncomesPage from "./pages/Incomes"
 import ExpensesPage from "./pages/Expenses"
 import Dashboard from "./pages/Dashboard"
+import ComponentsPage from "./pages/Components";
 import AppLayout from "./layouts/AppLayout"
 import { getMonthOffset } from "./utils"
 
@@ -19,6 +20,10 @@ export const router = createBrowserRouter([
     {
         path: "/error",
         element: <h1>Error page</h1>
+    },
+    {
+        path: "/components",
+        element: <ComponentsPage />,
     },
     {
         loader: authMiddleware,
@@ -51,7 +56,7 @@ function authMiddleware() {
     const token = localStorage.getItem("token");
 
     if (!token) {
-        throw redirect("/login");
+        throw redirect("/");
     }
 
     return null;
@@ -63,7 +68,7 @@ async function getDashboardData({ request }: { request: Request }) {
 
         const url = new URL(request.url);
         const dateParam = url.searchParams.get("date");
-        
+
         const date = dateParam ? new Date(`${dateParam}T00:00`) : new Date();
 
         const [expenses, incomes, expensesSummarized, expensesTotal, incomesTotal] = await Promise.all([
@@ -100,7 +105,7 @@ async function getIncomes({ request }: { request: Request }) {
 
         const url = new URL(request.url);
         const dateParam = url.searchParams.get("date");
-        
+
         const date = dateParam ? new Date(`${dateParam}T00:00`) : new Date();
 
         const [incomes, incomesTotal] = await Promise.all([
@@ -124,7 +129,7 @@ async function getExpenses({ request }: { request: Request }) {
 
         const url = new URL(request.url);
         const dateParam = url.searchParams.get("date");
-        
+
         const date = dateParam ? new Date(`${dateParam}T00:00`) : new Date();
 
         const [expenses, expensesTotal] = await Promise.all([

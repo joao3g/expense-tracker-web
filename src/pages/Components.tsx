@@ -72,13 +72,6 @@ export default function Main() {
                         Filtro
                     </div>
                 </Button>
-
-                <Button variant="menu" disabled onClick={() => console.log(".")}>
-                    <div className="flex items-center gap-2">
-                        <Settings size={16} />
-                        Configurações
-                    </div>
-                </Button>
             </div>
 
             <div className="flex gap-3">

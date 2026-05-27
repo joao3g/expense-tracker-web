@@ -10,7 +10,7 @@ import {
     Users
 } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
-import { useNavigate, useRevalidator } from "react-router";
+import { useLocation, useNavigate, useRevalidator } from "react-router";
 import { useState } from "react";
 import { AddExpenseModal } from "./modals/AddExpenseModal";
 import { Button } from "./Button";
@@ -35,6 +35,7 @@ export function Sidebar() {
     const authContext = useAuth();
     const navigate = useNavigate();
     const { revalidate } = useRevalidator();
+    const { pathname } = useLocation();
 
     function logout() {
         authContext.logout();
@@ -73,28 +74,28 @@ export function Sidebar() {
                     </div>
 
                     <div className="flex flex-col font-semibold py-4 px-4 gap-2">
-                        <SidebarButton disabled onClick={() => navigate("/dashboard")}>
+                        <SidebarButton disabled={pathname === "/dashboard" ? true : false} onClick={() => navigate("/dashboard")}>
                             <div className="flex gap-2 items-center">
                                 <LayoutDashboard size={16} />
                                 <span className="text-sm">Dashboard</span>
                             </div>
                         </SidebarButton>
 
-                        <SidebarButton onClick={() => navigate("/incomes")}>
+                        <SidebarButton disabled={pathname === "/incomes" ? true : false} onClick={() => navigate("/incomes")}>
                             <div className="flex gap-2 items-center">
                                 <BanknoteArrowUp size={16} />
                                 <span className="text-sm">Entradas</span>
                             </div>
                         </SidebarButton>
 
-                        <SidebarButton onClick={() => navigate("/expenses")}>
+                        <SidebarButton disabled={pathname === "/expenses" ? true : false} onClick={() => navigate("/expenses")}>
                             <div className="flex gap-2 items-center">
                                 <BanknoteArrowDown size={16} />
                                 <span className="text-sm">Saídas</span>
                             </div>
                         </SidebarButton>
 
-                        <SidebarButton onClick={() => navigate("/categories")}>
+                        <SidebarButton disabled={pathname === "/categories" ? true : false} onClick={() => navigate("/categories")}>
                             <div className="flex gap-2 items-center">
                                 <Rows2 size={16} />
                                 <span className="text-sm">Categorias</span>

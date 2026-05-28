@@ -1,51 +1,75 @@
-import { type DefaultizedPieValueType, type PieValueType } from '@mui/x-charts/models';
-import { PieChart, pieArcLabelClasses } from '@mui/x-charts/PieChart';
+import { Pie, PieChart, Tooltip } from 'recharts';
+import { formatMoney } from '../../utils';
+import { Circle } from 'lucide-react';
 
-export default function Main({ data, collapse }: { data: PieValueType[], collapse?: boolean }) {
-    const TOTAL = data.map((item) => item.value).reduce((a, b) => a + b, 0);
-
-    if (collapse) {
-        const others = { 
-            value: data.reduce((acc, item) => {
-                const percent = (item.value / TOTAL) * 100;
-                if (percent <= 10) return acc + item.value;
-                return acc;
-            }, 0),
-            label: "Outros"
-        }
-
-        data = data.filter(item => {
-            const percent = (item.value / TOTAL) * 100;
-            if (percent <= 10) return false;
-            return true;
-        });
-
-        data.push(others);
+type CustomPieChartProps = {
+    data: {
+        name: string
+        value: number
+        fill: string
+    }[]
+    legend?: {
+        title: string
+        description?: string
+        maxItems?: number
     }
+}
 
-    const getArcLabel = (params: DefaultizedPieValueType) => {
-        const percent = (params.value / TOTAL) * 100;
-        return percent > 5 ? `${percent.toFixed(0)}%` : "";
-    };
+export function CustomPieChart(props: CustomPieChartProps) {
+    props.data.sort((a, b) => b.value - a.value);
 
     return (
-        <PieChart
-            // className="bg-blue-900"
-            height={200}
-            series={[
-                {
-                    outerRadius: 100,
-                    data: data,
-                    arcLabel: getArcLabel,
-                    valueFormatter: (param) => new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(param.value)
-                },
-            ]}
-            sx={{
-                [`& .${pieArcLabelClasses.root}`]: {
-                    fill: 'white',
-                    fontSize: 14,
-                },
-            }}
-        />
+        <div className="flex flex-col gap-4 items-center w-full">
+            {props.legend ?
+                <div className="flex justify-between w-full">
+                    <div className="flex flex-col">
+                        <span className="text-xl font-[600]">
+                            {props.legend.title}
+                        </span>
+                        <span className="text-xs text-neutral-600">
+                            {props.legend.description}
+                        </span>
+                    </div>
+                </div>
+                : null}
+
+            <PieChart
+                style={{ width: '60%', height: '100%', maxWidth: '500px', maxHeight: '80vh', aspectRatio: 1 }}
+                responsive
+            >
+                <Pie
+                    data={props.data}
+                    innerRadius="70%"
+                    outerRadius="100%"
+                />
+                <Tooltip
+                    contentStyle={{ borderRadius: 10, padding: 12 }}
+                    formatter={(value) => {
+                        if (typeof value === "number") {
+                            return formatMoney(String(value * 100));
+                        }
+
+                        return value;
+                    }}
+                />
+            </PieChart>
+
+            {props.legend ?
+                <div className="flex flex-col gap-2 w-full">
+                    {
+                        props.data.slice(0, props.legend.maxItems).map((entry, index) => (
+                            <div key={`pie-${entry.name}-${index}`} className="flex justify-between items-center w-full">
+                                <div className="flex gap-2 items-center">
+                                    <Circle size={12} color={entry.fill} fill={entry.fill} />
+                                    <span className="text-xs font-[300]">{entry.name}</span>
+                                </div>
+
+                                <span className="text-xs font-semibold">{formatMoney(String(entry.value * 100))}</span>
+                            </div>
+                        ))
+                    }
+                </div>
+            : null}
+        </div>
     );
 }

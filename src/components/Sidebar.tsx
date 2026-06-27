@@ -1,21 +1,23 @@
 import {
     LayoutDashboard,
-    Rows2,
-    User,
     LogOut,
     BanknoteArrowDown,
     BanknoteArrowUp,
     Settings,
     Plus,
-    Users
+    Tags,
+    Users,
+    Calendar,
+    ChevronRight,
+    ChevronLeft
 } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
+import { useDate } from "../hooks/useDate";
 import { useLocation, useNavigate, useRevalidator } from "react-router";
 import { useState } from "react";
-import { AddExpenseModal } from "./modals/AddExpenseModal";
+import { AddOrEditExpenseModal } from "./modals/AddOrEditExpenseModal";
 import { Button } from "./Button";
 import { Icon } from "./Icon";
-import { Badge } from "./Badge";
 
 function SidebarButton(props: React.ButtonHTMLAttributes<HTMLButtonElement>) {
     return (
@@ -33,24 +35,46 @@ export function Sidebar() {
     const [settingsPopupOpen, setSettingsPopupOpen] = useState(false);
 
     const authContext = useAuth();
+    if (!authContext.user) throw "Sidebar component need authContext.user";
+
     const navigate = useNavigate();
     const { revalidate } = useRevalidator();
     const { pathname } = useLocation();
+    const { currentDate, setCurrentDate } = useDate();
 
     function logout() {
-        authContext.logout();
         navigate("/");
+        authContext.logout();
+    }
+
+    function setNextMonth() {
+        const nextDate = new Date(currentDate);
+
+        nextDate.setDate(13);
+        nextDate.setMonth(nextDate.getMonth() + 1);
+
+        setCurrentDate(nextDate);
+    }
+
+    function setPreviousMonth() {
+        const previousDate = new Date(currentDate);
+
+        previousDate.setDate(13);
+        previousDate.setMonth(previousDate.getMonth() - 1);
+
+        setCurrentDate(previousDate);
     }
 
     return (
         <>
-            <AddExpenseModal
-                open={expenseModalOpen}
-                onClose={() => {
-                    setExpenseModalOpen(false);
-                    revalidate();
-                }}
-            />
+            {expenseModalOpen ?
+                <AddOrEditExpenseModal
+                    onClose={() => {
+                        setExpenseModalOpen(false);
+                        revalidate();
+                    }}
+                />
+            : null}
 
             <nav
                 className="fixed flex flex-col justify-between items-center w-70 min-h-screen bg-white border-r-1 border-slate-200"
@@ -71,6 +95,34 @@ export function Sidebar() {
                                 <span>Adicionar despesa</span>
                             </div>
                         </Button>
+                    </div>
+
+                    <div className="flex flex-col gap-4 px-6 py-4 bg-linear-to-t from-green-50 to-white border-1 border-slate-200 rounded-3xl mx-4 mt-2">
+                        <div className="flex justify-between">
+                            <div className="flex gap-1 items-center">
+                                <Calendar size={12} />
+                                <span className="text-xs">PERÍODO</span>
+                            </div>
+                            <span className="text-green-500 text-xs underline cursor-pointer">Mês atual</span>
+                        </div>
+
+                        <div className="flex items-center justify-between">
+                            <div 
+                                className="size-8 flex items-center justify-center text-neutral-600 rounded-full cursor-pointer"
+                                onClick={setPreviousMonth}
+                            >
+                                <ChevronLeft size={14} />
+                            </div>
+
+                            <span className="text-sm font-[600]">{currentDate.toLocaleDateString("pt-BR", { month: "long", year: "numeric" })[0].toUpperCase() + currentDate.toLocaleDateString("pt-BR", { month: "long", year: "numeric" }).slice(1)}</span>
+
+                            <div 
+                                className="size-8 flex items-center justify-center text-neutral-600 rounded-full cursor-pointer"
+                                onClick={setNextMonth}
+                            >
+                                <ChevronRight size={14} />
+                            </div>
+                        </div>
                     </div>
 
                     <div className="flex flex-col font-semibold py-4 px-4 gap-2">
@@ -97,22 +149,22 @@ export function Sidebar() {
 
                         <SidebarButton disabled={pathname === "/categories" ? true : false} onClick={() => navigate("/categories")}>
                             <div className="flex gap-2 items-center">
-                                <Rows2 size={16} />
+                                <Tags size={16} />
                                 <span className="text-sm">Categorias</span>
                             </div>
                         </SidebarButton>
                     </div>
                 </div>
 
-                <div>
+                <div className="w-full">
                     <div className="flex gap-2 m-4 p-4 border-1 border-slate-200 rounded-2xl bg-emerald-100/20">
                         <div className="flex justify-center items-center rounded-full size-8 bg-teal-300/50 text-teal-500">
                             <Users size={16} />
                         </div>
 
                         <div className="flex flex-col">
-                            <span className="text-black text-[12px] font-[500]">Apartamento 403</span>
-                            <span className="text-neutral-600 text-[9px]/3">1 membro</span>
+                            <span className="text-black text-[12px] font-[500]">{authContext.user.group.title}</span>
+                            <span className="text-neutral-600 text-[9px]/3">{authContext.user.group.totalMembers} membro{authContext.user.group.totalMembers > 1 ? "s" : null}</span>
                         </div>
                     </div>
 
@@ -139,7 +191,7 @@ export function Sidebar() {
                         </div>
 
                         <div className="flex justify-center items-center cursor-pointer rounded-full size-10 bg-linear-120 from-emerald-600 from-30% to-teal-500" onClick={() => setSettingsPopupOpen(!settingsPopupOpen)}>
-                            <span className="font-[600] text-sm text-white/80">
+                            <span className="font-[700] text-sm text-white/80">
                                 {
                                     authContext.user?.name
                                         .split(" ")

@@ -9,3 +9,16 @@ export type Category = {
         title: string
     }
 }
+
+export type CategoryUpdate = {
+    id: string
+    title?: string
+    description?: string
+    color?: string
+}
+
+export type CategoryCreate = {
+    title: string
+    description: string
+    color: string
+}

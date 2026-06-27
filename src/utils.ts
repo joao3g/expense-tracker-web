@@ -60,3 +60,9 @@ export const hexToHsl = (hex: string) => {
         l: l * 100,
     }
 }
+
+export const PAYMENT_METHOD_MAP = {
+    "CREDIT": "Crédito",
+    "DEBIT": "Débito",
+    "VOUCHER": "Vale"
+}

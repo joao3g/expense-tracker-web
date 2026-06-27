@@ -1,9 +1,11 @@
 import { createBrowserRouter, redirect } from "react-router"
 import * as expenseService from "./api/services/expense.service"
 import * as incomeService from "./api/services/income.service"
+import * as categoryService from "./api/services/category.service"
 import LoginPage from "./pages/Login"
 import IncomesPage from "./pages/Incomes"
 import ExpensesPage from "./pages/Expenses"
+import CategoriesPage from "./pages/Categories"
 import Dashboard from "./pages/Dashboard"
 import ComponentsPage from "./pages/Components";
 import AppLayout from "./layouts/AppLayout"
@@ -45,8 +47,9 @@ export const router = createBrowserRouter([
                 element: <ExpensesPage />,
             },
             {
+                loader: getCategories,
                 path: "/categories",
-                element: <h1>/categories</h1>,
+                element: <CategoriesPage />,
             },
         ],
     },
@@ -76,16 +79,18 @@ async function getDashboardData({ request }: { request: Request }) {
             await incomeService.getIncomesByMonth(getMonthOffset(date, 0)),
             await expenseService.getExpensesSummarizedByMonth(getMonthOffset(date, 0)),
             [
+                await expenseService.getExpensesTotalByMonth(getMonthOffset(date, 2)),
+                await expenseService.getExpensesTotalByMonth(getMonthOffset(date, 1)),
                 await expenseService.getExpensesTotalByMonth(getMonthOffset(date, 0)),
                 await expenseService.getExpensesTotalByMonth(getMonthOffset(date, -1)),
                 await expenseService.getExpensesTotalByMonth(getMonthOffset(date, -2)),
-                await expenseService.getExpensesTotalByMonth(getMonthOffset(date, -3)),
             ],
             [
+                await incomeService.getIncomesTotalByMonth(getMonthOffset(date, 2)),
+                await incomeService.getIncomesTotalByMonth(getMonthOffset(date, 1)),
                 await incomeService.getIncomesTotalByMonth(getMonthOffset(date, 0)),
                 await incomeService.getIncomesTotalByMonth(getMonthOffset(date, -1)),
                 await incomeService.getIncomesTotalByMonth(getMonthOffset(date, -2)),
-                await incomeService.getIncomesTotalByMonth(getMonthOffset(date, -3)),
             ]
         ]);
 
@@ -138,6 +143,30 @@ async function getExpenses({ request }: { request: Request }) {
         ]);
 
         return { expenses, expensesTotal };
+    } catch (e) {
+        if (e instanceof Response) {
+            throw e;
+        }
+
+        throw redirect("/error");
+    }
+}
+
+async function getCategories({ request }: { request: Request }) {
+    try {
+        authMiddleware();
+
+        const url = new URL(request.url);
+        const dateParam = url.searchParams.get("date");
+
+        const date = dateParam ? new Date(`${dateParam}T00:00`) : new Date();
+
+        const [expenses, categories] = await Promise.all([
+            await expenseService.getExpensesByMonth(getMonthOffset(date, 0)),
+            await categoryService.listCategories()
+        ]);
+
+        return { expenses, categories };
     } catch (e) {
         if (e instanceof Response) {
             throw e;

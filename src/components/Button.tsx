@@ -1,6 +1,7 @@
 type ButtonVariants =
     | "primary"
     | "secondary"
+    | "danger"
 
 export type ButtonProps = {
     children: React.ReactNode
@@ -11,14 +12,15 @@ export type ButtonProps = {
 
 const variants = {
     primary: "px-4 py-2 text-white bg-linear-to-r from-green-600/90 via-emerald-700/90 via-60% to-emerald-700 hover:opacity-95 font-normal text-md shadow-emerald-100 shadow-lg",
-    secondary: "px-4 py-2 text-black bg-white font-normal text-md shadow-black-100 shadow-sm/20 inset-shadow-sm hover:text-green-900 hover:bg-green-100"
+    secondary: "px-4 py-2 text-black bg-white font-normal text-sm shadow-black-100 shadow-sm/20 inset-shadow-sm hover:text-green-900 hover:bg-green-100",
+    danger: "px-4 py-2 text-white bg-red-500 text-sm hover:opacity-80"
 }
 
 export function Button(props: ButtonProps) {
     return (
         <button
             className={`
-                rounded-full cursor-pointer w-full
+                rounded-full cursor-pointer w-full h-max
                 ${props.variant ? variants[props.variant] : undefined}
             `}
             disabled={props.disabled}

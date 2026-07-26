@@ -10,6 +10,10 @@ export const getDateInCurrentOffset = (date: Date) => {
     return new Date(date.toISOString().split("T")[0] + "T00:00");
 }
 
+export const getMonthAndYearString = (date: Date) => {
+    return date.toISOString().slice(0, 7);
+}
+
 export const formatMoney = (value: string) => {
     let result: string | number = Number(value.replace(/\D/g, ''));
     result = (result / 100).toLocaleString('pt-BR', {
@@ -65,4 +69,10 @@ export const PAYMENT_METHOD_MAP = {
     "CREDIT": "Crédito",
     "DEBIT": "Débito",
     "VOUCHER": "Vale"
+}
+
+export const PAYMENT_METHOD_TO_COLOR_MAP = {
+    "CREDIT": "FF0D0D",
+    "DEBIT": "009A4D",
+    "VOUCHER": "00B5B5"
 }

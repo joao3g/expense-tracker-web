@@ -1,15 +1,15 @@
 import { useState } from "react";
 import { Input } from "../Input";
 import { Button } from "../Button";
-import { Check, Tag, X } from "lucide-react";
+import { Check, X } from "lucide-react";
 import { useToast } from "../../hooks/useToast";
 import { createCategory, updateCategory } from "../../api/services/category.service";
 import type { Category } from "../../api/types/category";
-import { hexToHsl } from "../../utils";
 import { CategoryIcon } from "../Icon";
 
 type AddOrEditCategoryModalProps = {
     onClose: React.MouseEventHandler
+    onSuccess: React.MouseEventHandler
     data?: Category
 }
 
@@ -38,7 +38,7 @@ export function AddOrEditCategoryModal(props: AddOrEditCategoryModalProps) {
                 addToast("Categoria criada com sucesso!", "info");
             }
 
-            props.onClose(e);
+            props.onSuccess(e);
         } catch (e) {
             if (props.data) addToast("Erro ao editar categoria!", "error");
             else addToast("Erro ao inserir categoria!", "error");

@@ -13,11 +13,13 @@ import {
 } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
 import { useDate } from "../hooks/useDate";
-import { useLocation, useNavigate, useRevalidator } from "react-router";
+import { useLocation, useNavigate } from "react-router";
 import { useState } from "react";
 import { AddOrEditExpenseModal } from "./modals/AddOrEditExpenseModal";
 import { Button } from "./Button";
 import { Icon } from "./Icon";
+import { queryClient } from "../Routes";
+import { expensesByMonthQuery } from "../queries/expenses";
 
 function SidebarButton(props: React.ButtonHTMLAttributes<HTMLButtonElement>) {
     return (
@@ -35,10 +37,8 @@ export function Sidebar() {
     const [settingsPopupOpen, setSettingsPopupOpen] = useState(false);
 
     const authContext = useAuth();
-    if (!authContext.user) throw "Sidebar component need authContext.user";
 
     const navigate = useNavigate();
-    const { revalidate } = useRevalidator();
     const { pathname } = useLocation();
     const { currentDate, setCurrentDate } = useDate();
 
@@ -65,16 +65,21 @@ export function Sidebar() {
         setCurrentDate(previousDate);
     }
 
+    function handleNewExpense() {
+        setExpenseModalOpen(false);
+        queryClient.refetchQueries({ queryKey: [expensesByMonthQuery(currentDate).queryKey[0]] });
+    }
+
     return (
         <>
             {expenseModalOpen ?
                 <AddOrEditExpenseModal
                     onClose={() => {
                         setExpenseModalOpen(false);
-                        revalidate();
                     }}
+                    onSuccess={handleNewExpense}
                 />
-            : null}
+                : null}
 
             <nav
                 className="fixed flex flex-col justify-between items-center w-70 min-h-screen bg-white border-r-1 border-slate-200"
@@ -103,11 +108,11 @@ export function Sidebar() {
                                 <Calendar size={12} />
                                 <span className="text-xs">PERÍODO</span>
                             </div>
-                            <span className="text-green-500 text-xs underline cursor-pointer">Mês atual</span>
+                            <span className="text-green-500 text-xs underline cursor-pointer" onClick={() => setCurrentDate(new Date())}>Mês atual</span>
                         </div>
 
                         <div className="flex items-center justify-between">
-                            <div 
+                            <div
                                 className="size-8 flex items-center justify-center text-neutral-600 rounded-full cursor-pointer"
                                 onClick={setPreviousMonth}
                             >
@@ -116,7 +121,7 @@ export function Sidebar() {
 
                             <span className="text-sm font-[600]">{currentDate.toLocaleDateString("pt-BR", { month: "long", year: "numeric" })[0].toUpperCase() + currentDate.toLocaleDateString("pt-BR", { month: "long", year: "numeric" }).slice(1)}</span>
 
-                            <div 
+                            <div
                                 className="size-8 flex items-center justify-center text-neutral-600 rounded-full cursor-pointer"
                                 onClick={setNextMonth}
                             >
@@ -163,8 +168,8 @@ export function Sidebar() {
                         </div>
 
                         <div className="flex flex-col">
-                            <span className="text-black text-[12px] font-[500]">{authContext.user.group.title}</span>
-                            <span className="text-neutral-600 text-[9px]/3">{authContext.user.group.totalMembers} membro{authContext.user.group.totalMembers > 1 ? "s" : null}</span>
+                            <span className="text-black text-[12px] font-[500]">{authContext.user?.group.title}</span>
+                            <span className="text-neutral-600 text-[9px]/3">{authContext.user?.group.totalMembers} membro{authContext.user?.group.totalMembers || 0 > 1 ? "s" : null}</span>
                         </div>
                     </div>
 

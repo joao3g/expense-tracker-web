@@ -28,18 +28,20 @@ export type Expense = {
     title: string
     description?: string
     amount: string
-    transactionDate: Date
-    dueDate: Date
+    transactionDate: string
+    dueDate: string
     paymentMethod: typeof PaymentMethod[keyof typeof PaymentMethod]
+    isEssential?: boolean
     category: {
         id: string
         title: string
         description?: string
+        color: string
         groupId: string
-        createdAt: Date
-        updatedAt: Date
+        createdAt: string
+        updatedAt: string
     },
-    createdAt: Date
+    createdAt: string
 }
 
 export type ExpenseSummarized = {

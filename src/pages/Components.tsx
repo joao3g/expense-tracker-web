@@ -6,13 +6,17 @@ import {
     Ticket,
 
     Plus,
-    SlidersHorizontal,
-    Settings
+    SlidersHorizontal
 } from "lucide-react";
 import { Badge } from "../components/Badge";
 import { Button } from "../components/Button";
 import { Icon } from "../components/Icon";
 import { Input } from "../components/Input";
+import { CardSkeleton } from "../components/CardSkeleton";
+import { ExpensesVsIncomesBarChart } from '../components/charts/BarChart';
+import { CustomPieChart } from "../components/charts/PieChart";
+import { BasicTable } from "../components/Table";
+import { LoadingSkeleton } from "../components/LoadingSkeleton";
 
 export default function Main() {
     return (
@@ -78,6 +82,120 @@ export default function Main() {
                 <Input 
                     label="Email"
                     type="text"
+                />
+            </div>
+
+            <div className="flex gap-3">
+                <CardSkeleton>
+                    <div className="h-30 w-100" />
+                </CardSkeleton>
+
+                <LoadingSkeleton />
+            </div>
+
+            <div className="flex gap-24 w-300">
+                <div className="flex gap-3">
+                    <ExpensesVsIncomesBarChart 
+                        data={[
+                            {
+                                name: 'Fevereiro',
+                                expense: 4700,
+                                income: 6000
+                            },
+                            {
+                                name: 'Março',
+                                expense: 1700,
+                                income: 3000
+                            },
+                            {
+                                name: 'Abril',
+                                expense: 5700,
+                                income: 8000
+                            },
+                            {
+                                name: 'Maio',
+                                expense: 5200,
+                                income: 4000
+                            }
+                        ]}
+                        legend={{
+                            title: "Entradas vs Despesas",
+                            description: "Últimos 4 meses",
+                            showChartLegend: true
+                        }}
+                    />
+                </div>
+
+                <div className="flex gap-3">
+                    <CustomPieChart 
+                        data={[
+                            {
+                                name: "Travel",
+                                value: 412,
+                                fill: "#796AE5"
+                            },{
+                                name: "Housing",
+                                value: 1850,
+                                fill: "#C37F00"
+                            },{
+                                name: "Food & Dining",
+                                value: 228.90,
+                                fill: "#009A4D"
+                            },{
+                                name: "Shopping",
+                                value: 198.20,
+                                fill: "#796AE5"
+                            },{
+                                name: "Transport",
+                                value: 102.5,
+                                fill: "#00B5B5"
+                            }
+                        ]}
+                        caption={{
+                            title: "Despesas por categoria",
+                            description: "testando 123",
+                            maxItems: 3
+                        }}
+                    />
+                </div>
+            </div>
+
+            <div className="flex gap-24 w-300">
+                <BasicTable 
+                    caption={{ title: "Últimas transações", description: "Atividades recentes em sua(s) conta(s)" }}
+                    data={[
+                        {
+                            color: "#009A4D",
+                            value: 142.5,
+                            title: "Whole Foods",
+                            description: ["Alimentação", "21 de maio", "Débito"]
+                        },{
+                            color: "#00B5B5",
+                            value: 38.2,
+                            title: "Uber rides",
+                            description: ["Transporte", "20 de maio", "Crédito"]
+                        },{
+                            color: "#009A4D",
+                            value: 86.4,
+                            title: "Dinner - Bottega",
+                            description: ["Alimentação", "18 de maio", "Vale"]
+                        },{
+                            color: "#796AE5",
+                            value: 120,
+                            title: "Nike sneakers",
+                            description: ["Compras", "17 de maio", "Crédito"]
+                        },{
+                            color: "#C282D0",
+                            value: 32,
+                            title: "Pharmacy",
+                            description: ["Saúde", "14 de maio", "Débito"]
+                        },{
+                            color: "#F14D4C",
+                            value: 28,
+                            title: "Cinema",
+                            description: ["Entretenimento", "11 de maio", "Crédito"]
+                        }
+                    ]}
                 />
             </div>
         </div>

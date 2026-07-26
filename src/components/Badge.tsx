@@ -25,7 +25,7 @@ export function Badge(props: BadgeProps) {
     return (
         <div
             className={`
-                inline-flex items-center rounded-full px-2 py-1 text-xs font-medium
+                inline-flex items-center rounded-full px-2 py-1 text-xs font-medium h-max
                 ${props.variant ? variants[props.variant] : undefined}
             `}
             style={props.color ? { backgroundColor: props.color, color: generateTextColor(props.color) } : undefined}

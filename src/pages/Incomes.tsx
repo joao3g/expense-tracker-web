@@ -1,145 +1,191 @@
-import type { Income, IncomeTotal } from '../api/types/income';
+import type { Income } from '../api/types/income';
 import { useState } from 'react';
-import { useLoaderData, useRevalidator, useSearchParams } from "react-router";
-import { Table } from "../components/Table";
-import { Input } from '../components/Input';
+import { useQuery } from '@tanstack/react-query';
+import { MoreOptionButton } from '../components/Input';
 import { Button } from '../components/Button';
-import { Edit, Trash } from 'lucide-react';
-import { AddIncomeModal } from '../components/modals/AddIncomeModal';
-import ConfirmActionModal from '../components/modals/ConfirmActionModal';
+import { Edit, Plus, Trash, TrendingUp } from 'lucide-react';
+import { AddOrEditIncomeModal } from '../components/modals/AddOrEditIncomeModal';
+import DeleteModal from '../components/modals/DeleteConfirmModal';
 import { deleteIncome } from '../api/services/income.service';
 import { useToast } from '../hooks/useToast';
-import { EditIncomeModal } from '../components/modals/EditIncomeModal';
+import { formatMoney } from '../utils';
+import { CardSkeleton } from '../components/CardSkeleton';
+import { useDate } from '../hooks/useDate';
+import { incomesByMonthQuery } from '../queries/incomes';
+import { queryClient } from '../Routes';
 
 export default function Main() {
-    const data = useLoaderData<{
-        incomes: Income[],
-        incomesTotal: IncomeTotal
-    }>();
-    
-    const [searchParams, setSearchParams] = useSearchParams();
-    const { revalidate } = useRevalidator();
     const { addToast } = useToast();
-    
-    const [selectedDate, setSelectedDate] = useState<Date>(initiateSelectedDate());
+
+    const { currentDate } = useDate();
     const [selectedIncome, setSelectedIncome] = useState<Income>();
-    
-    const [addModalOpen, setAddModalOpen] = useState(false);
-    const [editModalOpen, setEditModalOpen] = useState(false);
-    const [confirmModalOpen, setConfirmModalOpen] = useState(false);
-    
-    const tableRows = getTableRows(data.incomes);
 
-    function getTableRows(incomes: Income[]) {
-        return incomes.map(income => {
-            return [
-                income.title,
-                Number(income.amount),
-                income.user.name,
-                { icon: <Edit className="cursor-pointer" />, callback: () => { setSelectedIncome(income); setEditModalOpen(true); } },
-                { icon: <Trash color="red" className="cursor-pointer" />, callback: () => { setSelectedIncome(income); setConfirmModalOpen(true); } }
-            ];
-        });
-    }
+    const [addOrEditModalOpen, setAddOrEditModalOpen] = useState(false);
+    const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+    const [showMoreOptionsModal, setShowMoreOptionsModal] = useState(false);
+    const [moreOptionsModalCoordinates, setMoreOptionsModalCoordinates] = useState([0, 0]);
 
-    function handleDateChange(date: Date) {
-        const formatted = date.toLocaleDateString("en-CA");
+    const query = useQuery(incomesByMonthQuery(currentDate));
 
-        setSearchParams({ date: formatted });
-    }
-
-    function initiateSelectedDate() {
-        const dateParam = searchParams.get("date");
-
-        return dateParam ? new Date(`${dateParam}T00:00`) : new Date();
-    }
+    const incomes = query.data;
+    const incomesTotal = query.data?.reduce((acc, income) => acc + Number(income.amount) , 0).toFixed(2);
 
     async function deleteSelectedIncome() {
         try {
             if (selectedIncome) await deleteIncome(selectedIncome.id);
-            revalidate();
+
             addToast(`Entrada "${selectedIncome?.title}" excluída!`, "info");
+
+            queryClient.setQueryData(incomesByMonthQuery(currentDate).queryKey, (oldValue: Income[]) =>
+                    oldValue.filter(income => income.id !== selectedIncome?.id));
+
             setSelectedIncome(undefined);
+            setDeleteModalOpen(false);
         } catch {
             addToast(`Falha ao excluir "${selectedIncome?.title}"!`, "error");
         }
     }
 
+    function handleMoreOptionsButton(e: React.MouseEvent, income: Income) {
+        const calcX = e.clientX - 80;
+        const calcY = e.clientY + 20;
+
+        setSelectedIncome(income);
+        setMoreOptionsModalCoordinates([calcX, calcY]);
+        setShowMoreOptionsModal(true);
+    }
+
+    function handleAddOrEdit() {
+        setSelectedIncome(undefined);
+        setAddOrEditModalOpen(false);
+        queryClient.refetchQueries({ queryKey: [incomesByMonthQuery(currentDate).queryKey[0]] });
+    }
+
     return (
         <>
-            <AddIncomeModal
-                open={addModalOpen}
-                onClose={() => {
-                    setAddModalOpen(false);
-                    revalidate();
-                }}
-            />
+            {showMoreOptionsModal ?
+                <>
+                    <div
+                        className={`fixed top-0 left-0 z-999 size-dvw bg-slate-900/2`}
+                        onClick={() => {
+                            setSelectedIncome(undefined);
+                            setShowMoreOptionsModal(false);
+                        }}
+                    />
 
-            { selectedIncome ? <EditIncomeModal
-                open={editModalOpen}
-                onClose={() => {
-                    setEditModalOpen(false);
-                    revalidate();
-                }}
-                data={selectedIncome}
-            /> : null }
-
-            <ConfirmActionModal
-                title="Confirmar exclusão"
-                description={<span>Tem certeza que deseja deletar a entrada <b><i>{selectedIncome?.title}</i></b>?</span>}
-                color="red"
-                open={confirmModalOpen}
-                onSuccess={() => { deleteSelectedIncome(); setConfirmModalOpen(false); }}
-                onClose={() => setConfirmModalOpen(false)}
-            />
-            
-            <div className="flex flex-col items-center w-full">
-                <div className="w-full flex justify-between mb-4">
-                    <Button
-                        color="emerald"
-                        onClick={() => setAddModalOpen(true)}
+                    <div
+                        className={`absolute flex flex-col rounded-3xl w-40 bg-white z-999 border-1 border-slate-200 shadow-lg`}
+                        style={{ left: moreOptionsModalCoordinates[0], top: moreOptionsModalCoordinates[1] }}
                     >
-                        Adicionar entrada
-                    </Button>
-                    <div className="w-3xs">
-                        <Input
-                            type="date"
-                            label="Mês vigente"
-                            value={selectedDate.toLocaleDateString("en-CA")}
-                            onChange={(e) => {
-                                const date = new Date(e.target.value + "T00:00:00");
-                                setSelectedDate(date);
-                                handleDateChange(date);
+                        <button
+                            className="flex items-center gap-2 border-b-1 px-4 py-2 border-slate-200 rounded-t-3xl hover:bg-slate-200/30 hover:cursor-pointer"
+                            onClick={() => {
+                                setAddOrEditModalOpen(true);
+                                setShowMoreOptionsModal(false);
                             }}
-                        />
+                        >
+                            <Edit size={16} />
+                            Editar
+                        </button>
+
+                        <button
+                            className="flex items-center gap-2 text-red-600 px-4 py-2 rounded-b-3xl hover:bg-slate-200/30 hover:cursor-pointer"
+                            onClick={() => {
+                                setDeleteModalOpen(true);
+                                setShowMoreOptionsModal(false);
+                            }}
+                        >
+                            <Trash size={16} />
+                            Deletar
+                        </button>
+                    </div>
+                </>
+                : null}
+
+            {addOrEditModalOpen ?
+                <AddOrEditIncomeModal
+                    onClose={() => {
+                        setAddOrEditModalOpen(false);
+                        setSelectedIncome(undefined);
+                    }}
+                    onSuccess={handleAddOrEdit}
+                    data={selectedIncome}
+                />
+                : null}
+
+            {deleteModalOpen ?
+                <DeleteModal
+                    title={`Deletar a entrada "${selectedIncome?.title}"?`}
+                    description="Essa entrada será permanentemente removida e seus dashboards serão atualizados imediatamente. Essa ação não pode ser desfeita."
+                    onDelete={deleteSelectedIncome}
+                    onClose={() => setDeleteModalOpen(false)}
+                />
+                : null}
+
+            <div className="flex flex-col grid-cols-3 items-center w-full">
+                <div className="flex justify-between items-center mb-4 w-full">
+                    <div className="flex flex-col">
+                        <span className="text-3xl font-[600]">
+                            Entradas
+                        </span>
+                        <span className="text-sm/6 text-neutral-600">
+                            {`${incomes?.length} fonte(s) de entrada · ${formatMoney(String(incomesTotal))} esse mês`}
+                        </span>
+                    </div>
+
+                    <div className="w-max">
+                        <Button
+                            variant="primary"
+                            onClick={() => setAddOrEditModalOpen(true)}
+                        >
+                            <div className="flex items-center gap-2">
+                                <Plus size={16} strokeWidth={3} />
+                                Adicionar entrada
+                            </div>
+                        </Button>
                     </div>
                 </div>
                 <div
                     className="grid grid-cols-6 gap-6 w-full"
                 >
-                    <div className="col-span-6">
-                        <div className="flex flex-col gap-6 justify-center items-center rounded-2xl bg-white border-1 border-neutral-100">
-                            <div className="flex flex-col items-start w-full bg-neutral-100 rounded-t-2xl py-4 flex pl-10 items-center border-b-1 border-neutral-100">
-                                <h2
-                                    className="text-2xl font-semibold"
-                                >
-                                    {`Entradas no mês de ${selectedDate.toLocaleString("pt-BR", { month: "long" })}`}
-                                </h2>
-                                <h6>
-                                    {`Total: ${data.incomes.reduce((acc, currentValue) => acc + Number(currentValue.amount), 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}`}
-                                </h6>
+
+                    {incomes?.length ?
+                        incomes.map((income, index) =>
+                            <div key={`income-div-${index}`} className="col-span-2">
+                                <CardSkeleton>
+                                    <div className="flex justify-between items-center">
+                                        <div className="bg-green-100 size-10 rounded-full flex justify-center items-center">
+                                            <TrendingUp size={20} className="text-green-900" />
+                                        </div>
+
+                                        {/* {renderBadge(Number(data.expensesTotal[3]._sum.amount), Number(data.expensesTotal[2]._sum.amount), true)} */}
+
+                                        <MoreOptionButton onClick={(e) => handleMoreOptionsButton(e, income)} />
+                                    </div>
+
+                                    <div className="flex flex-col justify-between items-start mt-4 mb-4">
+                                        <span className="text-md font-[600]">{income.title}</span>
+                                    </div>
+
+                                    <span className="text-green-600 font-[600] text-2xl">+{formatMoney(String(Number(income.amount).toFixed(2)))}</span>
+                                </CardSkeleton>
                             </div>
-                            {
-                                tableRows.length ?
-                                    <Table
-                                        header={["Título", "Valor", "Usuário"]}
-                                        rows={tableRows}
-                                        sortBy={{ index: 1, type: "DESC" }}
-                                    /> :
-                                    <span className="mb-4 text-xl italic">Não há dados para o período selecionado</span>
-                            }
+                        )
+                        :
+                        <div className="col-span-6">
+                            <CardSkeleton>
+                                <div className="flex flex-col gap-4 justify-center items-center py-12">
+                                    <div className="flex items-center justify-center size-16 bg-neutral-100/60 rounded-full text-neutral-500">
+                                        <TrendingUp size={24} />
+                                    </div>
+
+                                    <span className="text-lg font-[600]">{`Nenhum registro em ${currentDate.toLocaleDateString("pt-BR", { month: "long", year: "numeric" })}`}</span>
+
+                                    <span className="text-sm text-center w-2/5">Nenhum entrada foi encontrada no período selecionado. Navegue para outro mês usando o seletor na barra lateral, ou adicione uma nova entrada para este mês.</span>
+                                </div>
+                            </CardSkeleton>
                         </div>
-                    </div>
+                    }
                 </div>
             </div>
         </>

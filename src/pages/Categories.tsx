@@ -1,30 +1,27 @@
-import type { Income, IncomeTotal } from '../api/types/income';
-import { useEffect, useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { useLoaderData, useRevalidator, useSearchParams } from "react-router";
-import { Input, MoreOptionButton } from '../components/Input';
+import { useState } from 'react';
+import { useQueries } from '@tanstack/react-query';
+import { useLoaderData } from "react-router";
+import { MoreOptionButton } from '../components/Input';
 import { Button } from '../components/Button';
-import { ArrowUpDown, ArrowUpRight, Edit, Plus, Tag, Trash, TrendingUp } from 'lucide-react';
-import { AddOrEditIncomeModal } from '../components/modals/AddOrEditIncomeModal';
+import { Edit, Plus, Trash } from 'lucide-react';
 import DeleteModal from '../components/modals/DeleteConfirmModal';
 import { useToast } from '../hooks/useToast';
 import { formatMoney } from '../utils';
 import { CardSkeleton } from '../components/CardSkeleton';
 import { useDate } from '../hooks/useDate';
-import type { Expense } from '../api/types/expense';
 import type { Category } from '../api/types/category';
 import { AddOrEditCategoryModal } from '../components/modals/AddOrEditCategoryModal';
 import { deleteCategory } from '../api/services/category.service';
 import { CategoryIcon } from '../components/Icon';
+import { categoriesQuery } from '../queries/categories';
+import { queryClient } from '../Routes';
+import { expensesByMonthQuery } from '../queries/expenses';
 
 export default function Main() {
     const data = useLoaderData<{
-        expenses: Expense[],
         categories: Category[]
     }>();
 
-    const [searchParams, setSearchParams] = useSearchParams();
-    const { revalidate } = useRevalidator();
     const { addToast } = useToast();
 
     const { currentDate } = useDate();
@@ -35,29 +32,39 @@ export default function Main() {
     const [showMoreOptionsModal, setShowMoreOptionsModal] = useState(false);
     const [moreOptionsModalCoordinates, setMoreOptionsModalCoordinates] = useState([0, 0]);
 
-    // const query = useQuery({
-    //     queryKey: ["expenses"],
-    //     queryFn: () =>
-    //         getIncomesByMonth(currentDate)
-    // });
+    const queries = useQueries({
+        queries: [
+            expensesByMonthQuery(currentDate),
+            {
+                ...categoriesQuery(),
+                initialData: data.categories
+            }
+        ]
+    });
 
-    // throw query;
-
-    function handleDateChange(date: Date) {
-        const formatted = date.toLocaleDateString("en-CA");
-
-        setSearchParams({ date: formatted });
-    }
+    const expenses = queries[0].data;
+    const categories = queries[1].data;
 
     async function deleteSelectedCategory() {
         try {
             if (selectedCategory) await deleteCategory(selectedCategory.id);
-            revalidate();
+
             addToast(`Categoria "${selectedCategory?.title}" excluída!`, "info");
+
+            queryClient.setQueryData(categoriesQuery().queryKey, (oldValue: Category[]) =>
+                oldValue.filter(category => category.id !== selectedCategory?.id));
+
             setSelectedCategory(undefined);
+            setDeleteModalOpen(false);
         } catch {
             addToast(`Falha ao excluir "${selectedCategory?.title}"!`, "error");
         }
+    }
+
+    function handleAddOrEdit() {
+        setSelectedCategory(undefined);
+        setAddOrEditModalOpen(false);
+        queryClient.refetchQueries({ queryKey: categoriesQuery().queryKey });
     }
 
     function handleMoreOptionsButton(e: React.MouseEvent, category: Category) {
@@ -115,8 +122,8 @@ export default function Main() {
                     onClose={() => {
                         setAddOrEditModalOpen(false);
                         setSelectedCategory(undefined);
-                        revalidate();
                     }}
+                    onSuccess={handleAddOrEdit}
                     data={selectedCategory}
                 />
                 : null}
@@ -125,7 +132,7 @@ export default function Main() {
                 <DeleteModal
                     title={`Deletar a categoria "${selectedCategory?.title}"?`}
                     description="Essa categoria será removida da sua lista. Transações existentes relacionadas com essa categoria serão mantidas e marcadas como descategorizadas."
-                    onDelete={() => { deleteSelectedCategory(); setDeleteModalOpen(false); }}
+                    onDelete={deleteSelectedCategory}
                     onClose={() => setDeleteModalOpen(false)}
                 />
                 : null}
@@ -137,7 +144,7 @@ export default function Main() {
                             Categorias
                         </span>
                         <span className="text-sm/6 text-neutral-600">
-                            Distribuição das despesas por categorias no mês selecionado.
+                            Distribuição das despesas por categorias no mês de {currentDate.toLocaleDateString("pt-BR", { month: "long" })}.
                         </span>
                     </div>
 
@@ -158,7 +165,7 @@ export default function Main() {
                 >
 
                     {
-                        data.categories.map((category, index) =>
+                        categories?.map((category, index) =>
                             <div key={`category-div-${index}`} className="col-span-1">
                                 <CardSkeleton>
                                     <div className="flex justify-between items-center mb-6">
@@ -170,7 +177,7 @@ export default function Main() {
                                                     {category.title}
                                                 </span>
                                                 <span className="text-[11px]/2 text-neutral-600">
-                                                    {data.expenses.reduce((acc, expense) => {
+                                                    {expenses?.reduce((acc, expense) => {
                                                         if (expense.category.id === category.id) return acc + 1;
                                                         return acc;
                                                     }, 0)} transações
@@ -184,7 +191,7 @@ export default function Main() {
                                     </div>
 
                                     <span className="font-[600] text-2xl">{
-                                        formatMoney(String(Number(data.expenses.reduce((acc, expense) => {
+                                        formatMoney(String(Number(expenses?.reduce((acc, expense) => {
                                             if (expense.category.id === category.id) return acc + Number(expense.amount);
                                             return acc;
                                         }, 0)).toFixed(2)))

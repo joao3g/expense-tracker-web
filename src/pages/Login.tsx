@@ -83,7 +83,7 @@ function Main() {
                     </div>
 
                     <div className="flex flex-col w-full">
-                        <h3 className="text-xl font-[600]">Finanças pessoais & compatilhadas.</h3>
+                        <h3 className="text-xl font-[600]">Finanças pessoais & compartilhadas.</h3>
                         <span className="text-neutral-600 text-sm">Mapeie cada despesa, compartilhe com seu grupo e veja seu balanço crescer — tudo em um único lugar.</span>
                     </div>
 

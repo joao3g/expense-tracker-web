@@ -1,5 +1,5 @@
 import { ChevronDown, Ellipsis, Search } from "lucide-react";
-import { useRef, useState } from "react";
+import { useState } from "react";
 
 interface CustomInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
     label: string;

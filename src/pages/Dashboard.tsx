@@ -1,11 +1,7 @@
-import { useState } from 'react';
-import { useLoaderData, useSearchParams } from "react-router";
 import { CardSkeleton } from '../components/CardSkeleton';
 import { ExpensesVsIncomesBarChart } from '../components/charts/BarChart';
-import type { Expense, ExpenseSummarized, ExpenseTotal } from '../api/types/expense';
-import type { Income, IncomeTotal } from '../api/types/income';
+import type { Expense, ExpenseSummarized } from '../api/types/expense';
 import { formatMoney, getMonthOffset, PAYMENT_METHOD_MAP, PAYMENT_METHOD_TO_COLOR_MAP } from '../utils';
-import { Input } from '../components/Input';
 import { Badge } from '../components/Badge';
 import { ArrowDownRight, ArrowUpRight, CalendarOff, TrendingDown, TrendingUp, Wallet } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
@@ -53,16 +49,6 @@ function getExpensesByCategoryPieData(expensesSummarized: ExpenseSummarized | un
     return data;
 }
 
-function getExpensesByTitlePieData(expensesSummarized: ExpenseSummarized | undefined) {
-    return expensesSummarized?.summarizedByTitle.map(item => {
-        return {
-            value: Number(item._sum.amount),
-            fill: "#333333",
-            name: item.title
-        }
-    });
-}
-
 function getExpensesByPaymentMethodPieData(expensesSummarized: ExpenseSummarized | undefined) {
     return expensesSummarized?.summarizedByPaymentMethod.map(item => {
         return {
@@ -90,18 +76,6 @@ function getIncomesVsExpensesBarChartData(startDate: Date, expensesTotal: number
     }
 
     return data;
-}
-
-function getLastMonthRelationData(expensesTotal: number[], incomesTotal: number[]) {
-    if (expensesTotal.length < 2 || incomesTotal.length < 2) throw "incomesTotal and expensesTotal has to have size greater than 1";
-
-    const currentMonthBalance = incomesTotal[0] - expensesTotal[0];
-    const lastMonthBalance = incomesTotal[1] - expensesTotal[1];
-
-    if (currentMonthBalance === 0 || lastMonthBalance === 0) return "+ 0%";
-
-    const relation = Math.floor((currentMonthBalance - Math.abs(lastMonthBalance)) * 100 / lastMonthBalance);
-    return relation >= 0 ? `+ ${Math.abs(relation)}%` : `- ${Math.abs(relation)}%`;
 }
 
 export default function Main() {
@@ -150,11 +124,9 @@ export default function Main() {
     const incomeTotal = data.incomesTotal[2];
     const expenseTotal = data.expensesTotal[2];
 
-    const lastMonthRelation = getLastMonthRelationData(data.expensesTotal, data.incomesTotal);
     const tableData = getExpenseTableData(data.expenses);
     const expensesByCategoryPieData = getExpensesByCategoryPieData(data.expensesSummarized);
     const expensesByPaymentMethod = getExpensesByPaymentMethodPieData(data.expensesSummarized);
-    const expensesByPaymentMethodPieData = getExpensesByPaymentMethodPieData(data.expensesSummarized);
     const incomesVsExpensesBarChartData = getIncomesVsExpensesBarChartData(new Date(currentDate), data.expensesTotal, data.incomesTotal);
 
     function handleGreeting() {

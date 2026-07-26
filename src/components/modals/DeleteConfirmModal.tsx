@@ -1,5 +1,5 @@
 import { TriangleAlert, X } from "lucide-react";
-import { Button, type ButtonProps } from "../Button";
+import { Button } from "../Button";
 
 type ConfirmActionProps = {
     title: string
